@@ -1,0 +1,860 @@
+<!doctype html>
+<html lang="bn-BD" class="scroll-smooth bg-[#060913] text-white selection:bg-amber-500 selection:text-slate-950">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>B2Bfiy Institute | Admin Control Panel Dashboard</title>
+    <!-- Favicon link -->
+    <link id="favicon" rel="icon" type="image/jpeg" href="assets/images/site_logo_1781814933236.jpg" />
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="./src/index.css" />
+    <!-- Remixicon and Font Awesome icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  </head>
+  <body class="bg-[#060913] text-slate-100 min-h-screen">
+
+    <!-- [1] ADMIN LOGIN INTERFACE -->
+    <div id="admin-login-layout" class="fixed inset-0 z-50 bg-[#060913] flex items-center justify-center p-4">
+      <!-- Backing decoration -->
+      <div class="absolute inset-0 opacity-10 pointer-events-none">
+        <div class="absolute top-1/2 left-1/2 w-[350px] h-[350px] bg-amber-500/20 rounded-full blur-[100px] transform -translate-x-1/2 -translate-y-1/2"></div>
+      </div>
+
+      <div class="glass-panel max-w-md w-full p-8 rounded-3xl border border-slate-900 shadow-2xl relative z-10 text-center">
+        <!-- Logo -->
+        <div class="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto mb-6">
+          <i class="fa-solid fa-user-shield text-2xl text-amber-500"></i>
+        </div>
+        
+        <h1 class="text-2xl font-extrabold text-white mb-2 tracking-tight">ড্যাশবোর্ড অ্যাডমিন লগইন</h1>
+        <p class="text-slate-400 text-xs mb-8">B2Bfiy Institute এর পোর্টাল কনফিগারেশনের জন্য ভ্যালিড ক্রেডেন্সিয়াল এন্টার করুন।</p>
+
+        <!-- Dynamic inline login error notifications visual alerts -->
+        <div id="login-error-msg" class="hidden bg-red-950/40 border border-red-900/30 text-red-400 px-4 py-3 rounded-xl text-xs font-semibold mb-6 text-left">
+          ভুল ক্রেডেন্সিয়্যাল দেওয়া হয়েছে!
+        </div>
+
+        <form id="admin-login-form" class="space-y-6 text-left">
+          
+          <!-- Username input -->
+          <div class="flex flex-col gap-2">
+            <label for="admin_input_user" class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">ইউজারনেম</label>
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"><i class="fa-regular fa-user"></i></span>
+              <input id="admin_input_user" type="text" value="admin1" required placeholder="User ID" class="w-full pl-12 pr-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-500/50 focus:outline-none transition-all placeholder:text-slate-700 text-sm">
+            </div>
+          </div>
+
+          <!-- Password input + visibility toggle eyeball -->
+          <div class="flex flex-col gap-2">
+            <label for="admin_input_password" class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">পাসওয়ার্ড</label>
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"><i class="fa-solid fa-lock"></i></span>
+              <input id="admin_input_password" type="password" required placeholder="••••••••••••" class="w-full pl-12 pr-12 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-500/50 focus:outline-none transition-all placeholder:text-slate-700 text-sm">
+              <button type="button" id="toggle-password" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-amber-500 cursor-pointer">
+                <i class="fa-solid fa-eye-slash"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Submit trigger -->
+          <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-extrabold text-sm uppercase tracking-wider rounded-xl hover:shadow-[0_0_25px_rgba(245,158,11,0.35)] transition-all duration-300 text-center cursor-pointer">
+            লগইন করুন <i class="fa-solid fa-right-to-bracket ml-2"></i>
+          </button>
+
+        </form>
+      </div>
+    </div>
+
+
+    <!-- [2] ADMINISTRATIVE MAIN DASHBOARD -->
+    <div id="admin-dashboard-layout" class="hidden min-h-screen flex flex-col md:flex-row">
+      
+      <!-- SUB SIDEBAR NAVIGATION -->
+      <aside class="w-full md:w-64 border-r border-slate-900 bg-slate-950 shrink-0 flex flex-col justify-between">
+        <div class="p-6">
+          <!-- Logo Brand -->
+          <div class="flex items-center gap-3 border-b border-slate-900 pb-6 mb-8">
+            <div class="w-10 h-10 rounded-xl overflow-hidden border border-amber-500/25">
+              <img class="site-logo-img w-full h-full object-cover animate-pulse" src="assets/images/site_logo_1781814933236.jpg" alt="Logo">
+            </div>
+            <div class="flex flex-col">
+              <span class="text-white text-base font-black tracking-tight leading-none">B2Bfiy</span>
+              <span class="text-amber-500 text-[10px] tracking-widest font-black uppercase mt-1 leading-none">Institute Console</span>
+            </div>
+          </div>
+
+          <!-- Menu links -->
+          <nav class="space-y-1.5">
+            <button data-target="overview" class="admin-sidebar-btn w-full px-4 py-3 bg-amber-500 text-slate-950 font-bold rounded-xl text-left text-xs lg:text-sm flex items-center gap-3 transition-colors duration-200">
+              <i class="fa-solid fa-chart-line text-base"></i><span>ওভারভিউ স্ট্যাটস</span>
+            </button>
+            <button data-target="site-settings" class="admin-sidebar-btn w-full px-4 py-3 text-slate-400 hover:bg-slate-900/40 hover:text-white rounded-xl text-left text-xs lg:text-sm flex items-center gap-3 transition-colors duration-200">
+              <i class="fa-solid fa-sliders text-base"></i><span>সাইট সেটিংস</span>
+            </button>
+            <button data-target="hero-editor" class="admin-sidebar-btn w-full px-4 py-3 text-slate-400 hover:bg-slate-900/40 hover:text-white rounded-xl text-left text-xs lg:text-sm flex items-center gap-3 transition-colors duration-200">
+              <i class="fa-solid fa-rectangle-ad text-base"></i><span>হিরো সেকশন</span>
+            </button>
+            <button data-target="services-editor" class="admin-sidebar-btn w-full px-4 py-3 text-slate-400 hover:bg-slate-900/40 hover:text-white rounded-xl text-left text-xs lg:text-sm flex items-center gap-3 transition-colors duration-200">
+              <i class="fa-solid fa-briefcase text-base"></i><span>সার্ভিস সমূহ</span>
+            </button>
+            <button data-target="portfolio-editor" class="admin-sidebar-btn w-full px-4 py-3 text-slate-400 hover:bg-slate-900/40 hover:text-white rounded-xl text-left text-xs lg:text-sm flex items-center gap-3 transition-colors duration-200">
+              <i class="fa-solid fa-photo-film text-base"></i><span>পোর্টফোলিও</span>
+            </button>
+            <button data-target="clients-editor" class="admin-sidebar-btn w-full px-4 py-3 text-slate-400 hover:bg-slate-900/40 hover:text-white rounded-xl text-left text-xs lg:text-sm flex items-center gap-3 transition-colors duration-200">
+              <i class="fa-solid fa-handshake text-base"></i><span>ক্লায়েন্ট লোগো</span>
+            </button>
+            <button data-target="reviews-editor" class="admin-sidebar-btn w-full px-4 py-3 text-slate-400 hover:bg-slate-900/40 hover:text-white rounded-xl text-left text-xs lg:text-sm flex items-center gap-3 transition-colors duration-200">
+              <i class="fa-regular fa-comment-dots text-base"></i><span>মতামত ও রিভিউ</span>
+            </button>
+            <button data-target="about-editor" class="admin-sidebar-btn w-full px-4 py-3 text-slate-400 hover:bg-slate-900/40 hover:text-white rounded-xl text-left text-xs lg:text-sm flex items-center gap-3 transition-colors duration-200">
+              <i class="fa-solid fa-users-viewfinder text-base"></i><span>পরিচিতি ও টিম</span>
+            </button>
+            <button data-target="contact-editor" class="admin-sidebar-btn w-full px-4 py-3 text-slate-400 hover:bg-slate-900/40 hover:text-white rounded-xl text-left text-xs lg:text-sm flex items-center gap-3 transition-colors duration-200">
+              <i class="fa-regular fa-envelope text-base"></i><span>যোগাযোগ ও সোশ্যাল</span>
+            </button>
+            <button data-target="footer-editor" class="admin-sidebar-btn w-full px-4 py-3 text-slate-400 hover:bg-slate-900/40 hover:text-white rounded-xl text-left text-xs lg:text-sm flex items-center gap-3 transition-colors duration-200">
+              <i class="fa-solid fa-border-bottom text-base"></i><span>ফুটার সেটিংস</span>
+            </button>
+          </nav>
+        </div>
+
+        <!-- Logout Bottom segment -->
+        <div class="p-6 border-t border-slate-900">
+          <button data-target="logout" class="admin-sidebar-btn w-full px-4 py-3 text-red-400 hover:bg-red-950/40 hover:text-red-300 rounded-xl text-left text-xs lg:text-sm flex items-center gap-3 transition-colors duration-200 cursor-pointer font-bold">
+            <i class="fa-solid fa-power-off text-base"></i><span>লগআউট কনট্রোল</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- PORTAL BODY CONTROLLER CONTENT -->
+      <main class="flex-1 flex flex-col bg-[#04060d]">
+        
+        <!-- Header Strip -->
+        <header class="border-b border-slate-900 bg-slate-950 px-8 py-5 flex items-center justify-between">
+          <div>
+            <span class="text-slate-500 text-[10px] tracking-widest uppercase font-black block">B2Bfiy Dashboard</span>
+            <h2 id="admin-active-panel-title" class="text-lg font-extrabold text-white">ওভারভিউ স্ট্যাটস</h2>
+          </div>
+          
+          <div class="flex items-center gap-4">
+            <a href="/" target="_blank" class="px-4 py-2 bg-slate-900 hover:bg-slate-850 text-amber-500 border border-slate-800 text-xs font-bold rounded-xl transition-all duration-300 flex items-center gap-1.5">
+              <i class="fa-solid fa-up-right-from-square"></i> লাইভ সাইট দেখুন
+            </a>
+            
+            <div class="flex items-center gap-2 border-l border-slate-900 pl-4">
+              <div class="w-8 h-8 rounded-full bg-amber-500/15 border border-amber-500/20 flex items-center justify-center text-amber-500 text-xs font-black">
+                A1
+              </div>
+              <span class="text-slate-300 text-xs font-semibold hidden sm:inline">Administrator</span>
+            </div>
+          </div>
+        </header>
+
+        <!-- Main section components views -->
+        <div class="flex-1 p-8 overflow-y-auto max-w-6xl w-full mx-auto">
+
+
+          <!-- ==================== [PANEL 1] STATS OVERVIEW ==================== -->
+          <section id="section-overview" class="admin-panel-section space-y-8">
+            <!-- Widgets Summary Grid -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+              <!-- Grid item services count -->
+              <div class="bg-slate-900/50 border border-slate-900 p-6 rounded-2xl flex items-center justify-between">
+                <div>
+                  <span class="text-slate-500 text-xs font-bold block mb-1">মোট সার্ভিসসমূহ</span>
+                  <span id="stat_total_services" class="text-3xl font-black text-amber-500">0</span>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-amber-500 text-lg"><i class="fa-solid fa-briefcase"></i></div>
+              </div>
+
+              <!-- Grid item portfolio items -->
+              <div class="bg-slate-900/50 border border-slate-900 p-6 rounded-2xl flex items-center justify-between">
+                <div>
+                  <span class="text-slate-500 text-xs font-bold block mb-1">পোর্টফোলিও প্রজেক্ট</span>
+                  <span id="stat_total_portfolio" class="text-3xl font-black text-white">0</span>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-white text-lg"><i class="fa-solid fa-photo-film"></i></div>
+              </div>
+
+              <!-- Grid item client counts -->
+              <div class="bg-slate-900/50 border border-slate-900 p-6 rounded-2xl flex items-center justify-between">
+                <div>
+                  <span class="text-slate-500 text-xs font-bold block mb-1">অংশীদার ক্লায়েন্ট</span>
+                  <span id="stat_total_clients" class="text-3xl font-black text-white">0</span>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-white text-lg"><i class="fa-solid fa-handshake"></i></div>
+              </div>
+
+              <!-- Grid item pending requests -->
+              <div class="bg-slate-900/50 border border-slate-900 p-6 rounded-2xl flex items-center justify-between">
+                <div>
+                  <span class="text-slate-500 text-xs font-bold block mb-1">মোট কন্টাক্ট রিকোয়েস্ট</span>
+                  <span id="stat_total_submissions" class="text-3xl font-black text-yellow-500">0</span>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-yellow-500 text-lg"><i class="fa-solid fa-envelope-open-text"></i></div>
+              </div>
+            </div>
+
+            <!-- Client Requests Logs section table -->
+            <div class="bg-slate-900/40 border border-slate-900 rounded-3xl p-6 relative">
+              <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-900">
+                <div>
+                  <h3 class="text-base font-bold text-white">গ্রাহক যোগাযোগ ও প্রজেক্ট রিকোয়েস্ট লগ</h3>
+                  <p class="text-[11px] text-slate-500 mt-1">ল্যান্ডিং পেজের কন্টাক্ট ফর্ম পূরণ করে সাবমিট করা ডাটার তালিকা।</p>
+                </div>
+                <div class="px-3 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[10px] font-bold uppercase rounded-lg">Database Sync</div>
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="border-b border-slate-900 text-[11px] text-slate-500 uppercase tracking-wider">
+                      <th class="p-4 font-bold">তারিখ</th>
+                      <th class="p-4 font-bold">নাম</th>
+                      <th class="p-4 font-bold">মোবাইল নাম্বার</th>
+                      <th class="p-4 font-bold">ইমেইল</th>
+                      <th class="p-4 font-bold">প্রজেক্ট রিকুয়েস্ট / বার্তা</th>
+                      <th class="p-4 font-bold text-center">অ্যাকশন</th>
+                    </tr>
+                  </thead>
+                  <td id="admin_submissions_table_body" class="divide-y divide-slate-900/50">
+                    <!-- Loaded dynamically via js -->
+                  </td>
+                </table>
+              </div>
+            </div>
+          </section>
+
+
+          <!-- ==================== [PANEL 2] SITE GENERAL CONFIGS ==================== -->
+          <section id="section-site-settings" class="admin-panel-section hidden space-y-8">
+            <div class="bg-slate-900/40 border border-slate-900 rounded-3xl p-8 max-w-3xl">
+              <h3 class="text-lg font-bold text-white mb-6 border-b border-slate-900 pb-4">সাইট জেনারাল মেটা ডাটা এবং লোগো</h3>
+              
+              <form id="admin-settings-form" class="space-y-6">
+                <!-- Branding logo -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-center border-b border-slate-900 pb-6">
+                  <div class="md:col-span-4 flex flex-col items-center">
+                    <span class="text-[11px] text-slate-400 font-bold uppercase tracking-wider mb-4">সাইট লোগো প্রিভিউ</span>
+                    <div class="w-24 h-24 rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 p-1">
+                      <img id="logo_preview_img" class="w-full h-full object-cover rounded-xl" src="" alt="logo preview">
+                    </div>
+                  </div>
+                  <div class="md:col-span-8 flex flex-col gap-2">
+                    <label for="input_logo_file" class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">নতুন লোগো আপলোড করুন</label>
+                    <input type="file" id="input_logo_file" accept="image/*" class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl text-xs text-slate-400 file:mr-4 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-amber-500 file:text-slate-950 file:cursor-pointer">
+                    <span class="text-[10px] text-slate-500 leading-relaxed mt-1">১:১ রেসিও বা স্কয়ার আকৃতির লোগো নির্বাচন করা রিকমেন্ডেড। সর্বোচ্চ সাইজ: ২ মেগাবাইট।</span>
+                  </div>
+                </div>
+
+                <!-- Site Title Input -->
+                <div class="flex flex-col gap-2">
+                  <label for="input_site_title" class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">ওয়েবসাইট টাইটেল (Title Tag)</label>
+                  <input id="input_site_title" type="text" class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-500/50 focus:outline-none transition-all placeholder:text-slate-700 text-sm">
+                </div>
+
+                <!-- Meta Description -->
+                <div class="flex flex-col gap-2">
+                  <label for="input_site_meta_desc" class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">মেটা ডেসক্রিপশন (Meta Description for SEO)</label>
+                  <textarea id="input_site_meta_desc" rows="3" class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-500/50 focus:outline-none transition-all placeholder:text-slate-700 text-sm resize-none"></textarea>
+                </div>
+
+                <!-- Favicon guide notification -->
+                <div class="bg-slate-950 border border-slate-900 p-4 rounded-xl flex gap-3 text-xs text-slate-400 leading-relaxed">
+                  <span class="text-amber-500 text-lg"><i class="fa-solid fa-circle-info"></i></span>
+                  <div>
+                    <span class="text-white font-bold block mb-1">ফেভিকন (Favicon) নোটিশ</span>
+                    ব্রাউজার ফেভিকন কাস্টমাইজেশন করতে চাইলে রুট ডিরেক্টরীর <code class="px-1.5 py-0.5 bg-slate-900 border border-slate-800 rounded text-amber-500 ml-1">index.html</code> ফাইলের <code class="px-1.5 py-0.5 bg-slate-900 border border-slate-800 rounded text-amber-500 ml-1">link rel="icon"</code> কোড ব্লকটি মডিফাই করুন বা উপরে লোগো হিসেবে আপলোড করলে স্ক্রিপ্ট এটি রানটাইমে ব্যবহার করবে।
+                  </div>
+                </div>
+
+                <!-- Action Button -->
+                <button type="submit" class="px-6 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs uppercase tracking-wider rounded-xl transition duration-300 cursor-pointer">
+                  মেটা ডাটা ও লোগো সেভ করুন
+                </button>
+              </form>
+            </div>
+          </section>
+
+
+          <!-- ==================== [PANEL 3] HERO EDIT PANEL ==================== -->
+          <section id="section-hero-editor" class="admin-panel-section hidden space-y-8">
+            <div class="bg-slate-900/40 border border-slate-900 rounded-3xl p-8 max-w-3xl">
+              <h3 class="text-lg font-bold text-white mb-6 border-b border-slate-900 pb-4">হিরো সেকশন টেক্সট এবং ওনার প্রোপাল ফটো</h3>
+              
+              <form id="admin-hero-form" class="space-y-6">
+                <!-- Owner image uploader link -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-center border-b border-slate-900 pb-6">
+                  <div class="md:col-span-4 flex flex-col items-center">
+                    <span class="text-[11px] text-slate-400 font-bold uppercase tracking-wider mb-4">ওনার ফটো প্রিভিউ</span>
+                    <div class="w-24 h-24 rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 p-1">
+                      <img id="hero_photo_preview_img" class="w-full h-full object-cover rounded-xl" src="" alt="owner photo preview">
+                    </div>
+                  </div>
+                  <div class="md:col-span-8 flex flex-col gap-2">
+                    <label for="input_hero_photo_file" class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">ওনার নতুন ফটো আপলোড দিন (Key: hero_photo)</label>
+                    <input type="file" id="input_hero_photo_file" accept="image/*" class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl text-xs text-slate-400 file:mr-4 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-amber-500 file:text-slate-950 file:cursor-pointer">
+                    <span class="text-[10px] text-slate-500 leading-relaxed mt-1">এজেন্সির ওনার বা মেন্টরের সুন্দর পোর্ট্রেট ছবি ব্যবহার করার জন্য এটি কাজে লাগবে।</span>
+                  </div>
+                </div>
+
+                <!-- Owner Designation Badge (CO - FOUNDER & CEO) -->
+                <div class="flex flex-col gap-2">
+                  <label for="input_hero_owner_title" class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">ওনার পদবী / উপাধি (যেমন: CO - FOUNDER & CEO)</label>
+                  <input id="input_hero_owner_title" type="text" required class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-550 focus:outline-none text-sm text-white">
+                </div>
+
+                <!-- Tagline headline -->
+                <div class="flex flex-col gap-2">
+                  <label for="input_hero_tagline" class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">ট্যাগলাইন হেডলাইন টেক্সট (বাংলা)</label>
+                  <input id="input_hero_tagline" type="text" required class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-550 focus:outline-none text-sm text-white">
+                </div>
+
+                <!-- Description details text -->
+                <div class="flex flex-col gap-2">
+                  <label for="input_hero_subtext" class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">হিরো সাবটেক্সট বিবরণ (ইংরেজি / বাংলা মিক্সড)</label>
+                  <textarea id="input_hero_subtext" rows="4" required class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-550 focus:outline-none text-sm text-white resize-none"></textarea>
+                </div>
+
+                <div class="bg-slate-950 border border-slate-900 p-4 rounded-xl text-xs text-slate-400 flex gap-2">
+                  <span class="text-amber-500 text-base"><i class="ri-lightbulb-line"></i></span>
+                  <span>"হায়ার মি" এবং "ভিও পোর্টফোলিও" বাটনগুলোর লিঙ্কিং যথাক্রমে কনট্যাক্ট হোয়াটসঅ্যাপ নাম্বার এবং পোর্টফোলিও স্ক্রলিং ট্যাগে সাজানো আছে।</span>
+                </div>
+
+                <!-- Submit buttons -->
+                <button type="submit" class="px-6 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs uppercase tracking-wider rounded-xl transition duration-300 cursor-pointer">
+                  হিরো সেকশন ডাটা সেভ করুন
+                </button>
+              </form>
+            </div>
+          </section>
+
+
+          <!-- ==================== [PANEL 4] SERVICES EDIT PANEL ==================== -->
+          <section id="section-services-editor" class="admin-panel-section hidden space-y-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              
+              <!-- Left form: Add services -->
+              <div class="lg:col-span-5 bg-slate-900/40 border border-slate-900 p-6 rounded-3xl">
+                <h3 class="text-sm font-bold text-white mb-6 border-b border-slate-900 pb-3">নতুন সার্ভিস ক্যাটাগরি তৈরি</h3>
+                
+                <form id="form_add_service" class="space-y-5">
+                  <div class="flex flex-col gap-1.5">
+                    <label for="service_input_title" class="text-[10px] text-slate-400 uppercase font-bold">সার্ভিস টাইটেল / নাম</label>
+                    <input type="text" id="service_input_title" placeholder="যেমন: Web Development, Graphics Design" required class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-550 focus:outline-none text-xs text-white">
+                  </div>
+
+                  <div class="flex flex-col gap-1.5">
+                    <label for="service_input_icon" class="text-[10px] text-slate-400 uppercase font-bold">সার্ভিস আইকন ক্লাস (Remixicon বা Emoji)</label>
+                    <input type="text" id="service_input_icon" placeholder="যেমন: ri-code-s-slash-line অথবা 💻" required class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-550 focus:outline-none text-xs font-mono text-white">
+                    <span class="text-[9px] text-slate-500 leading-tight">Remixicon বা Font Awesome আইকন ক্লাস অথবা ডিরেক্ট যেকোনো ইমোজি ব্যবহার করতে পারেন।</span>
+                  </div>
+
+                  <div class="flex flex-col gap-1.5">
+                    <label for="service_input_description" class="text-[10px] text-slate-400 uppercase font-bold">সংক্ষিপ্ত বিবরণ</label>
+                    <textarea id="service_input_description" rows="4" placeholder="সার্ভিসের বিবরণ লিখুন..." required class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-550 focus:outline-none text-xs text-white resize-none"></textarea>
+                  </div>
+
+                  <button type="submit" class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs uppercase tracking-wider cursor-pointer">
+                    সার্ভিস সেভ করুন <i class="fa-solid fa-plus-circle ml-1"></i>
+                  </button>
+                </form>
+              </div>
+
+              <!-- Right: existing services table -->
+              <div class="lg:col-span-7 bg-slate-900/40 border border-slate-900 p-6 rounded-3xl">
+                <h3 class="text-sm font-bold text-white mb-6 border-b border-slate-900 pb-3">টোটাল সার্ভিস তালিকা</h3>
+
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left">
+                    <thead>
+                      <tr class="border-b border-slate-900 text-[10px] text-slate-500 uppercase tracking-widest">
+                        <th class="p-4 font-bold">নং</th>
+                        <th class="p-4 font-bold">সার্ভিস নাম ও আইকন</th>
+                        <th class="p-4 font-bold">বিবরণ</th>
+                        <th class="p-4 font-bold text-center">মুছে ফেলুন</th>
+                      </tr>
+                    </thead>
+                    <tbody id="admin_services_table_body" class="divide-y divide-slate-900/40">
+                      <!-- Loaded via Javascript -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+
+          <!-- ==================== [PANEL 5] PORTFOLIO EDIT PANEL ==================== -->
+          <section id="section-portfolio-editor" class="admin-panel-section hidden space-y-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              
+              <!-- Left form: Add items links -->
+              <div class="lg:col-span-5 bg-slate-900/40 border border-slate-900 p-6 rounded-3xl">
+                <h3 class="text-sm font-bold text-white mb-6 border-b border-slate-900 pb-3">নতুন প্রজেক্ট পোর্টফোলিও অ্যাড করুন</h3>
+                
+                <form id="form_add_portfolio" class="space-y-4">
+                  <div class="flex flex-col gap-1.5">
+                    <label for="portfolio_input_category" class="text-[10px] text-slate-400 uppercase font-bold">প্রজেক্ট ক্যাটাগরি</label>
+                    <select id="portfolio_input_category" class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-550 focus:outline-none text-xs text-white">
+                      <option value="Graphics Design">Graphics Design</option>
+                      <option value="Video Editing">Video Editing</option>
+                      <option value="Website">Website</option>
+                    </select>
+                  </div>
+
+                  <div class="flex flex-col gap-1.5">
+                    <label for="portfolio_input_title" class="text-[10px] text-slate-400 uppercase font-bold">প্রজেক্ট টাইটেল / নাম</label>
+                    <input type="text" id="portfolio_input_title" placeholder="যেমন: E-commerce Website, Corporate Logo" required class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-550 focus:outline-none text-xs text-white">
+                  </div>
+
+                  <div class="flex flex-col gap-1.5 border border-slate-900/60 p-4 rounded-xl space-y-3 bg-slate-950/30">
+                    <label for="portfolio_input_image" class="text-[10px] text-slate-400 uppercase font-bold">প্রজেক্ট থাম্বনেইল ছবি (থাম্বনেইল URL বা ফাইল)</label>
+                    <input type="file" id="portfolio_input_image" accept="image/*" class="px-3 py-2 bg-slate-950 border border-slate-900 rounded-lg text-[11px] text-slate-400 file:py-1 file:px-2 file:rounded file:border-0 file:bg-amber-500 file:text-slate-950 file:cursor-pointer">
+                    
+                    <div class="flex justify-center mt-2">
+                      <img id="portfolio_preview_img" class="w-32 h-20 object-cover rounded-lg border border-slate-800 hidden" src="" alt="preview flex">
+                    </div>
+                  </div>
+
+                  <div class="flex flex-col gap-1.5">
+                    <label for="portfolio_input_videourl" class="text-[10px] text-slate-400 uppercase font-bold">ভিডিও প্রজেক্ট URL (যেমন: YouTube বা Google Drive লিঙ্ক)</label>
+                    <input type="text" id="portfolio_input_videourl" placeholder="যেমন: https://drive.google.com/file/d/... অথবা https://youtu.be/..." class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-550 focus:outline-none text-xs font-mono text-white">
+                    <span class="text-[9px] text-slate-500">ইউটিউব (YouTube) শেয়ার লিঙ্ক বা গুগল ড্রাইভ (Google Drive) শেয়ার লিঙ্ক এখানে দিয়ে দিতে পারেন। ড্রাইভ লিঙ্কের ক্ষেত্রে পারমিশন "Anyone with link (যে কেউ)" করা থাকতে হবে।</span>
+                  </div>
+
+                  <div class="flex flex-col gap-1.5 border border-slate-900/60 p-4 rounded-xl space-y-3 bg-slate-950/30">
+                    <label for="portfolio_input_videofile" class="text-[10px] text-slate-400 uppercase font-bold">অথবা সরাসরি ভিডিও ফাইল আপলোড করুন</label>
+                    <input type="file" id="portfolio_input_videofile" accept="video/mp4,video/webm" class="px-3 py-2 bg-slate-950 border border-slate-900 rounded-lg text-[11px] text-slate-400 file:py-1 file:px-2 file:rounded file:border-0 file:bg-amber-500 file:text-slate-950 file:cursor-pointer">
+                    <span class="text-[9px] text-slate-500">এমপি৪ (MP4) বা ওয়েবএম (WebM) ভিডিও আপলোড করতে পারবেন।</span>
+                    
+                    <div class="flex justify-center mt-2">
+                      <video id="portfolio_video_preview" class="w-full max-w-xs h-32 rounded-lg border border-slate-800 hidden" controls src=""></video>
+                    </div>
+                  </div>
+
+                  <div class="flex flex-col gap-1.5">
+                    <label for="portfolio_input_siteurl" class="text-[10px] text-slate-400 uppercase font-bold">লাইভ সাইট লিঙ্ক / ইউআরএল (শুধু Website এর জন্য)</label>
+                    <input type="text" id="portfolio_input_siteurl" placeholder="যেমন: https://example.com" class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-550 focus:outline-none text-xs font-mono text-white">
+                  </div>
+
+                  <button type="submit" class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs uppercase tracking-wider cursor-pointer">
+                    প্রজেক্ট যুক্ত করুন <i class="fa-solid fa-cloud-arrow-up ml-1"></i>
+                  </button>
+                </form>
+              </div>
+
+              <!-- Right: existing items table lists -->
+              <div class="lg:col-span-7 bg-slate-900/40 border border-slate-900 p-6 rounded-3xl">
+                <h3 class="text-sm font-bold text-white mb-6 border-b border-slate-900 pb-3">বর্তমান প্রজেক্ট তালিকা</h3>
+
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left">
+                    <thead>
+                      <tr class="border-b border-slate-900 text-[10px] text-slate-500 uppercase tracking-widest">
+                        <th class="p-4 font-bold">ছবি</th>
+                        <th class="p-4 font-bold">টাইটেল</th>
+                        <th class="p-4 font-bold">ক্যাটাগরি</th>
+                        <th class="p-4 font-bold">ইউআরএল / সোর্স</th>
+                        <th class="p-4 font-bold text-center">মুছে ফেলুন</th>
+                      </tr>
+                    </thead>
+                    <tbody id="admin_portfolio_table_body" class="divide-y divide-slate-900/40">
+                      <!-- Loaded via JS -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+
+          <!-- ==================== [PANEL 6] CLIENTS LOGO PANEL ==================== -->
+          <section id="section-clients-editor" class="admin-panel-section hidden space-y-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              
+              <!-- Left Add: client form link -->
+              <div class="lg:col-span-5 bg-slate-900/40 border border-slate-900 p-6 rounded-3xl">
+                <h3 class="text-sm font-bold text-white mb-6 border-b border-slate-900 pb-3">নতুন অংশীদার / ক্লায়েন্ট লোগো যুক্ত করুন</h3>
+                
+                <form id="form_add_client" class="space-y-5">
+                  <div class="flex flex-col gap-1.5">
+                    <label for="client_input_name" class="text-[10px] text-slate-400 uppercase font-bold">কোম্পানি / ব্র্যান্ডের নাম</label>
+                    <input type="text" id="client_input_name" placeholder="যেমন: SoftDev Co." required class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-550 focus:outline-none text-xs text-white">
+                  </div>
+
+                  <div class="flex flex-col gap-1.5 border border-slate-900/60 p-4 rounded-xl space-y-3 bg-slate-950/30">
+                    <label for="client_input_logo" class="text-[10px] text-slate-400 uppercase font-bold">ব্র্যান্ড লোগো ইমেজ আপলোড (Key: clients_data)</label>
+                    <input type="file" id="client_input_logo" accept="image/*" class="px-3 py-2 bg-slate-950 border border-slate-900 rounded-lg text-[11px] text-slate-400 file:py-1 file:px-2 file:rounded file:border-0 file:bg-amber-500 file:text-slate-950 file:cursor-pointer">
+                    
+                    <div class="flex justify-center mt-2">
+                      <img id="client_preview_img" class="h-10 w-auto object-contain bg-slate-950 p-2 rounded border border-slate-800 hidden" src="" alt="logo preview bg">
+                    </div>
+                  </div>
+
+                  <button type="submit" class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs uppercase tracking-wider cursor-pointer">
+                    অংশীদার ব্র্যান্ড যুক্ত করুন <i class="fa-solid fa-plus ml-1"></i>
+                  </button>
+                </form>
+              </div>
+
+              <!-- Right: client list tables -->
+              <div class="lg:col-span-7 bg-slate-900/40 border border-slate-900 p-6 rounded-3xl">
+                <h3 class="text-sm font-bold text-white mb-6 border-b border-slate-900 pb-3">অংশীদার ব্র্যান্ডদের লোগো তালিকা</h3>
+
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left">
+                    <thead>
+                      <tr class="border-b border-slate-900 text-[10px] text-slate-500 uppercase tracking-widest">
+                        <th class="p-4 font-bold">লোগো ছবি</th>
+                        <th class="p-4 font-bold">ব্র্যান্ড নাম</th>
+                        <th class="p-4 font-bold text-center">মুছে ফেলুন</th>
+                      </tr>
+                    </thead>
+                    <tbody id="admin_clients_table_body" class="divide-y divide-slate-900/40">
+                      <!-- Loaded via JS -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+
+          <!-- ==================== [PANEL 7] TESTIMONIALS PANEL ==================== -->
+          <section id="section-reviews-editor" class="admin-panel-section hidden space-y-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              
+              <!-- Left Form: Add Review -->
+              <div class="lg:col-span-5 bg-slate-900/40 border border-slate-900 p-6 rounded-3xl">
+                <h3 class="text-sm font-bold text-white mb-6 border-b border-slate-900 pb-3">নতুন ক্লায়েন্ট রিভিউ মেসেজ রেকর্ড</h3>
+                
+                <form id="form_add_review" class="space-y-4">
+                  <div class="flex flex-col gap-1.5">
+                    <label for="review_input_name" class="text-[10px] text-slate-400 uppercase font-bold">গ্রাহকের নাম (বাংলা বা ইংরেজি)</label>
+                    <input type="text" id="review_input_name" placeholder="যেমন: তানজির আহমেদ" required class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-550 focus:outline-none text-xs text-white">
+                  </div>
+
+                  <div class="flex flex-col gap-1.5">
+                    <label for="review_input_company" class="text-[10px] text-slate-400 uppercase font-bold">কোম্পানি / ডেজিগনেশন</label>
+                    <input type="text" id="review_input_company" placeholder="যেমন: CEO, AgroTech BD" required class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-550 focus:outline-none text-xs text-white">
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-4">
+                    <div class="flex flex-col gap-1.5">
+                      <label for="review_input_rating" class="text-[10px] text-slate-400 uppercase font-bold">স্টার রেটিং (1-5)</label>
+                      <select id="review_input_rating" class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-550 focus:outline-none text-xs text-white">
+                        <option value="5">⭐⭐⭐⭐⭐ (5 Star)</option>
+                        <option value="4">⭐⭐⭐⭐ (4 Star)</option>
+                        <option value="3">⭐⭐⭐ (3 Star)</option>
+                        <option value="2">⭐⭐ (2 Star)</option>
+                        <option value="1">⭐ (1 Star)</option>
+                      </select>
+                    </div>
+
+                    <div class="flex flex-col gap-1.5 justify-end">
+                      <label for="review_input_photo" class="text-[10px] text-slate-400 uppercase font-bold">গ্রাহকের চবি</label>
+                      <input type="file" id="review_input_photo" accept="image/*" class="px-3 py-2 bg-slate-950 border border-slate-900 rounded-lg text-[10px] text-slate-400 file:border-0 file:bg-amber-500 file:text-slate-950 file:cursor-pointer">
+                      <img id="review_preview_img" class="w-12 h-12 rounded-full border border-slate-800 hidden self-center mt-2 object-cover" src="" alt="customer avt">
+                    </div>
+                  </div>
+
+                  <div class="flex flex-col gap-1.5">
+                    <label for="review_input_text" class="text-[10px] text-slate-400 uppercase font-bold">রিভিউ বার্তা / মন্তব্য</label>
+                    <textarea id="review_input_text" rows="4" placeholder="কাজের প্রতিক্রিয়া..." required class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-550 focus:outline-none text-xs text-white resize-none"></textarea>
+                  </div>
+
+                  <button type="submit" class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs uppercase tracking-wider cursor-pointer">
+                    রিভিউ সেভ করুন <i class="fa-solid fa-comment-medical ml-1"></i>
+                  </button>
+                </form>
+              </div>
+
+              <!-- Right: Review list tables -->
+              <div class="lg:col-span-7 bg-slate-900/40 border border-slate-900 p-6 rounded-3xl">
+                <h3 class="text-sm font-bold text-white mb-6 border-b border-slate-900 pb-3">গ্রাহকদের রিভউ মতামত তালিকা</h3>
+
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left">
+                    <thead>
+                      <tr class="border-b border-slate-900 text-[10px] text-slate-500 uppercase tracking-widest">
+                        <th class="p-4 font-bold">ক্লায়েন্ট ছবি</th>
+                        <th class="p-4 font-bold">নাম ও কোম্পানি</th>
+                        <th class="p-4 font-bold">রেটিং</th>
+                        <th class="p-4 font-bold">রিভিউ মন্তব্য</th>
+                        <th class="p-4 font-bold text-center flex justify-center">মুছে ফেলুন</th>
+                      </tr>
+                    </thead>
+                    <tbody id="admin_reviews_table_body" class="divide-y divide-slate-900/40">
+                      <!-- Loaded via JS -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+
+          <!-- ==================== [PANEL 8] ABOUT US PANEL ==================== -->
+          <section id="section-about-editor" class="admin-panel-section hidden space-y-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              
+              <!-- Left Form: edit story & statistics values -->
+              <div class="lg:col-span-7 bg-slate-900/40 border border-slate-900 p-6 rounded-3xl space-y-6">
+                <h3 class="text-sm font-bold text-white mb-4 border-b border-slate-900 pb-3">পরিচিতি ইতিহাস ও পরিসংখ্যান সেকশন (Key: about_data)</h3>
+                
+                <form id="admin-about-general-form" class="space-y-6">
+                  <!-- General Bio textarea -->
+                  <div class="flex flex-col gap-1.5">
+                    <label for="about_input_bio" class="text-[10px] text-slate-400 uppercase font-bold">এজেন্সি পরিচিতি বা স্টোরি (বাংলা)</label>
+                    <textarea id="about_input_bio" rows="6" required class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-550 focus:outline-none text-sm text-white resize-none"></textarea>
+                  </div>
+
+                  <!-- Stats grid controllers internally inside about_data model -->
+                  <h4 class="text-xs font-bold text-amber-500 uppercase tracking-wide border-t border-slate-900 pt-4">অ্যানিমেটেড পরিসংখ্যান কাউন্টার (সবগুলো এডিটেবল)</h4>
+                  <div id="admin_about_stats_list" class="space-y-4">
+                    <!-- Populated dynamically -->
+                  </div>
+
+                  <button type="submit" class="px-6 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs uppercase tracking-wider rounded-xl transition duration-300 cursor-pointer">
+                    পরিচিতি তথ্য সেভ করুন
+                  </button>
+                </form>
+              </div>
+
+              <!-- Right: Add and manage team elements -->
+              <div class="lg:col-span-5 space-y-6">
+                <!-- Add Team form -->
+                <div class="bg-slate-900/40 border border-slate-900 p-6 rounded-3xl">
+                  <h3 class="text-sm font-bold text-white mb-6 border-b border-slate-900 pb-3">টিমে নতুন সদস্য এড করুন</h3>
+                  
+                  <form id="form_add_team_member" class="space-y-4">
+                    <div class="flex flex-col gap-1.5">
+                      <label for="about_team_input_name" class="text-[10px] text-slate-400 uppercase font-bold">সদস্যের নাম</label>
+                      <input type="text" id="about_team_input_name" placeholder="যেমন: সাকিব হোসাইন" required class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-550 focus:outline-none text-xs text-white">
+                    </div>
+
+                    <div class="flex flex-col gap-1.5">
+                      <label for="about_team_input_role" class="text-[10px] text-slate-400 uppercase font-bold">তার পদবী (Role)</label>
+                      <input type="text" id="about_team_input_role" placeholder="Senior Graphic Designer" required class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-550 focus:outline-none text-xs text-white">
+                    </div>
+
+                    <div class="flex flex-col gap-1.5 justify-end">
+                      <label for="about_team_input_photo" class="text-[10px] text-slate-400 uppercase font-bold">প্রোফাইল ছবি</label>
+                      <input type="file" id="about_team_input_photo" accept="image/*" class="px-3 py-2 bg-slate-950 border border-slate-900 rounded-lg text-[10px] text-slate-400 file:border-0 file:bg-amber-500 file:text-slate-950 file:cursor-pointer">
+                      <img id="about_team_preview_img" class="w-12 h-12 rounded-full border border-slate-800 hidden self-center mt-2 object-cover" src="" alt="team member avt">
+                    </div>
+
+                    <button type="submit" class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs uppercase tracking-wider cursor-pointer">
+                      টিমে সদস্য যুক্ত করুন <i class="fa-solid fa-user-plus ml-1"></i>
+                    </button>
+                  </form>
+                </div>
+
+                <!-- Existing team list table -->
+                <div class="bg-slate-900/40 border border-slate-900 p-6 rounded-3xl space-y-4">
+                  <h3 class="text-sm font-bold text-white border-b border-slate-900 pb-3">টিম মেম্বারদের তালিকা</h3>
+                  
+                  <div id="admin_about_team_list" class="space-y-3">
+                    <!-- Populated via JS function -->
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+
+          <!-- ==================== [PANEL 9] CONTACT & SOCIAL PANEL ==================== -->
+          <section id="section-contact-editor" class="admin-panel-section hidden space-y-8">
+            <div class="bg-slate-900/40 border border-slate-900 rounded-3xl p-8 max-w-3xl">
+              <h3 class="text-lg font-bold text-white mb-6 border-b border-slate-900 pb-4">যোগাযোগ মাধ্যম এবং সোশ্যাল মিডিয়া লিঙ্কসমূহ</h3>
+              
+              <form id="admin-contact-form" class="space-y-6">
+                <!-- Location details block -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div class="flex flex-col gap-1.5">
+                    <label for="contact_input_whatsapp" class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">হোয়াটসঅ্যাপ নাম্বার (বাটনে লিঙ্কিং এর জন্য)</label>
+                    <input type="text" id="contact_input_whatsapp" placeholder="+88017XXXXXXXX" required class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-550 focus:outline-none text-sm text-white font-mono">
+                  </div>
+
+                  <div class="flex flex-col gap-1.5">
+                    <label for="contact_input_email_admin" class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">অফিসিয়াল ইমেইল এড্রেস</label>
+                    <input type="email" id="contact_input_email_admin" placeholder="contact@b2bfiyinstitute.com" required class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-550 focus:outline-none text-sm text-white font-mono">
+                  </div>
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                  <label for="contact_input_location" class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">অফিস ঠিকানা / লোকেশন টেক্সট</label>
+                  <input type="text" id="contact_input_location" placeholder="মিরপুর, ঢাকা - ১২১৬, বাংলাদেশ" required class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-550 focus:outline-none text-sm text-white">
+                </div>
+
+                <!-- Social paths and channels URLs -->
+                <h4 class="text-xs font-bold text-amber-500 uppercase tracking-widest pt-4 border-t border-slate-900">সোশ্যাল মিডিয়া ইউআরএল সমূহ (Key: social_links)</h4>
+                
+                <div class="space-y-4">
+                  <!-- Facebook -->
+                  <div class="flex flex-col gap-1.5">
+                    <label for="social_input_facebook" class="text-[10px] text-slate-400 font-bold uppercase"><i class="fa-brands fa-facebook text-slate-500 mr-1.5"></i> ফেসবুক পেজ বা গ্রুপ লিঙ্ক</label>
+                    <input type="url" id="social_input_facebook" placeholder="https://facebook.com/..." class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-550 focus:outline-none text-xs font-mono text-white">
+                  </div>
+
+                  <!-- Instagram -->
+                  <div class="flex flex-col gap-1.5">
+                    <label for="social_input_instagram" class="text-[10px] text-slate-400 font-bold uppercase"><i class="fa-brands fa-instagram text-slate-500 mr-1.5"></i> ইন্সটাগ্রাম প্রোফাইল লিঙ্ক</label>
+                    <input type="url" id="social_input_instagram" placeholder="https://instagram.com/..." class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-550 focus:outline-none text-xs font-mono text-white">
+                  </div>
+
+                  <!-- YouTube -->
+                  <div class="flex flex-col gap-1.5">
+                    <label for="social_input_youtube" class="text-[10px] text-slate-400 font-bold uppercase"><i class="fa-brands fa-youtube text-slate-500 mr-1.5"></i> ইউটিউব চ্যানেল লিঙ্ক</label>
+                    <input type="url" id="social_input_youtube" placeholder="https://youtube.com/..." class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-550 focus:outline-none text-xs font-mono text-white">
+                  </div>
+                </div>
+
+                <button type="submit" class="px-6 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs uppercase tracking-wider rounded-xl transition duration-300 cursor-pointer animate-pulse">
+                  যোগাযোগ ও কন্টাক্ট লিঙ্ক আপডেট করুন
+                </button>
+              </form>
+            </div>
+          </section>
+
+
+          <!-- ==================== [PANEL 10] FOOTER EDIT PANEL ==================== -->
+          <section id="section-footer-editor" class="admin-panel-section hidden space-y-8">
+            <div class="bg-slate-900/40 border border-slate-900 rounded-3xl p-8 max-w-3xl">
+              <h3 class="text-lg font-bold text-white mb-6 border-b border-slate-900 pb-4">ফুটার ডেসক্রিপশন এবং কপিরাইট সেটিংস (Key: footer_data)</h3>
+              
+              <form id="admin-footer-form" class="space-y-6">
+                <!-- Short descriptive label -->
+                <div class="flex flex-col gap-1.5">
+                  <label for="footer_input_desc" class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">ফুটার সংক্ষিপ্ত বিবরণ (ডেসক্রিপশন)</label>
+                  <textarea id="footer_input_desc" rows="4" required class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-550 focus:outline-none text-sm text-white resize-none"></textarea>
+                </div>
+
+                <!-- Copyright statement -->
+                <div class="flex flex-col gap-1.5">
+                  <label for="footer_input_copy" class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">ফুটার কপিরাইট টেক্সট</label>
+                  <input type="text" id="footer_input_copy" required class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-550 focus:outline-none text-sm text-white">
+                </div>
+
+                <div class="bg-slate-950 border border-slate-900 p-4 rounded-xl text-xs text-slate-400 leading-relaxed font-semibold">
+                  <i class="fa-solid fa-circle-exclamation text-amber-500 mr-1 text-sm"></i> ফুটারের কুইক নেভিগেশন লিঙ্কগুলো সম্পূর্ণ ডাইনামিকালি মেইন ল্যান্ডিং পেজের আইডি ট্যাগের সাথে সিঙ্ক করা।
+                </div>
+
+                <button type="submit" class="px-6 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs uppercase tracking-wider rounded-xl transition duration-300 cursor-pointer">
+                  ফুটার ডাটা সংরক্ষণ করুন
+                </button>
+              </form>
+            </div>
+          </section>
+
+        </div>
+
+      </main>
+    </div>
+
+
+    <!-- ==================== [EDIT MODAL POPUP] ==================== -->
+    <div id="admin-edit-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-[#0b0f19] border border-slate-900 rounded-3xl max-w-lg w-full p-6 md:p-8 relative shadow-2xl overflow-y-auto max-h-[90vh]">
+        
+        <!-- Header -->
+        <div class="flex items-center justify-between border-b border-slate-900 pb-4 mb-6">
+          <h3 id="edit-modal-title" class="text-lg font-black text-white flex items-center gap-2">
+            <i class="fa-solid fa-pen-to-square text-amber-500"></i>
+            <span>তথ্য এডিট করুন</span>
+          </h3>
+          <button type="button" id="close-edit-modal" class="text-slate-400 hover:text-white cursor-pointer w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center border border-slate-800 transition">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <form id="admin-edit-form" class="space-y-4 text-left">
+          <!-- Hidden tracking values -->
+          <input type="hidden" id="edit_item_id" value="">
+          <input type="hidden" id="edit_item_index" value="">
+          <input type="hidden" id="edit_item_type" value="">
+
+          <!-- Fields are dynamically shown or hidden based on active element type -->
+
+          <!-- 1. General Text Title/Name -->
+          <div id="edit-group-title" class="flex flex-col gap-1.5">
+            <label id="edit-label-title" for="edit_input_title" class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">শিরোনাম / নাম</label>
+            <input id="edit_input_title" type="text" class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-500/50 focus:outline-none transition-all text-sm text-white">
+          </div>
+
+          <!-- 2. Subfield (used for: icon, role, company or custom attributes) -->
+          <div id="edit-group-subfield" class="flex flex-col gap-1.5">
+            <label id="edit-label-subfield" for="edit_input_subfield" class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">আইকন / পদবী</label>
+            <input id="edit_input_subfield" type="text" class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-500/50 focus:outline-none transition-all text-sm text-white">
+          </div>
+
+          <!-- 3. Category selector (used in Portfolios) -->
+          <div id="edit-group-category" class="flex flex-col gap-1.5">
+            <label for="edit_input_category" class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">ক্যাটাগরি</label>
+            <select id="edit_input_category" class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-500/50 focus:outline-none text-sm text-white">
+              <option value="Graphics Design">Graphics Design</option>
+              <option value="Video Editing">Video Editing</option>
+              <option value="Website">Website</option>
+            </select>
+          </div>
+
+          <!-- 4. Rating selector (used in Reviews) -->
+          <div id="edit-group-rating" class="flex flex-col gap-1.5">
+            <label for="edit_input_rating" class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">স্টার রেটিং (1-5)</label>
+            <select id="edit_input_rating" class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-500/50 focus:outline-none text-sm text-white">
+              <option value="5">⭐⭐⭐⭐⭐ (5 Star)</option>
+              <option value="4">⭐⭐⭐⭐ (4 Star)</option>
+              <option value="3">⭐⭐⭐ (3 Star)</option>
+              <option value="2">⭐⭐ (2 Star)</option>
+              <option value="1">⭐ (1 Star)</option>
+            </select>
+          </div>
+
+          <!-- 5. URL Field #1 (e.g. videoUrl, siteUrl) -->
+          <div id="edit-group-url1" class="flex flex-col gap-1.5">
+            <label id="edit-label-url1" for="edit_input_url1" class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">লিঙ্ক / ইউআরএল</label>
+            <input id="edit_input_url1" type="url" class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-500/50 focus:outline-none transition-all text-sm font-mono text-white">
+          </div>
+
+          <!-- 6. Text Description textarea (e.g. service details, reviews text) -->
+          <div id="edit-group-description" class="flex flex-col gap-1.5">
+            <label id="edit-label-description" for="edit_input_description" class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">বিস্তারিত বিবরণ</label>
+            <textarea id="edit_input_description" rows="4" class="px-4 py-3 bg-slate-950 border border-slate-900 rounded-xl focus:border-amber-500/50 focus:outline-none transition-all text-sm text-white resize-none"></textarea>
+          </div>
+
+          <!-- 7. Image Upload / Changer with view -->
+          <div id="edit-group-image" class="flex flex-col gap-1.5 border border-slate-900/60 p-4 rounded-xl space-y-3 bg-slate-950/30">
+            <label id="edit-label-image" for="edit_image_picker" class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">নতুন ছবি আপলোড করুন</label>
+            <input type="file" id="edit_image_picker" accept="image/*" class="px-3 py-2 bg-slate-950 border border-slate-900 rounded-lg text-xs text-slate-400 file:border-0 file:bg-amber-500 file:text-slate-950 file:cursor-pointer file:rounded file:px-2 file:py-1">
+            
+            <div class="flex justify-center mt-2">
+              <img id="edit_image_pre" class="h-20 w-auto rounded border border-slate-800 object-cover" src="" alt="preview logo">
+            </div>
+          </div>
+
+          <!-- Buttons -->
+          <div class="flex gap-4 pt-4 border-t border-slate-900">
+            <button type="button" id="btn-cancel-edit" class="flex-1 py-3 bg-slate-900 hover:bg-slate-850 text-slate-300 font-bold rounded-xl text-xs uppercase tracking-wider transition cursor-pointer border border-slate-800 text-center">
+              বাতিল
+            </button>
+            <button type="submit" class="flex-1 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs uppercase tracking-wider transition cursor-pointer text-center">
+              আপডেট করুন <i class="fa-solid fa-square-check ml-1"></i>
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+
+    <!-- Raw Administrative Scripts logic -->
+    <script type="module" src="./src/admin.ts"></script>
+  </body>
+</html>

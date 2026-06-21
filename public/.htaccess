@@ -1,0 +1,22 @@
+# ==============================================================================
+# B2Bfiy Institute - cPanel URL Optimization & Redirect Rules
+# ==============================================================================
+
+RewriteEngine On
+
+# 1. Beautiful URL: Access /admin instead of /admin.html
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^admin$ admin.html [L]
+
+# 2. Prevent directory indexing & secure database files from public access
+Options -Indexes
+<Files "site_db.json">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# 3. Gzip Compression for super-fast loads on slow connections
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/x-javascript application/json image/svg+xml
+</IfModule>

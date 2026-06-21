@@ -1,0 +1,6 @@
+{
+  "name": "B2Bfiy Institute",
+  "description": "Professional agency website for B2Bfiy Institute - a Bangladeshi digital agency with a dynamic hidden admin panel.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
