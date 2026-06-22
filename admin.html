@@ -138,8 +138,14 @@
             <h2 id="admin-active-panel-title" class="text-lg font-extrabold text-white">ওভারভিউ স্ট্যাটস</h2>
           </div>
           
-          <div class="flex items-center gap-4">
-            <a href="/" target="_blank" class="px-4 py-2 bg-slate-900 hover:bg-slate-850 text-amber-500 border border-slate-800 text-xs font-bold rounded-xl transition-all duration-300 flex items-center gap-1.5">
+          <div class="flex items-center gap-4 flex-wrap md:flex-nowrap">
+            <!-- Database Connection Status Badge -->
+            <div id="db-status-badge" class="px-3 py-2 rounded-xl border flex items-center gap-2 text-[11px] font-bold bg-slate-950 border-slate-900 text-slate-400 transition-all duration-300">
+              <span class="w-2.5 h-2.5 rounded-full bg-slate-500 animate-pulse"></span>
+              <span id="db-status-text">ডাটাবেজ কানেকশন চেক করা হচ্ছে...</span>
+            </div>
+
+            <a href="/" target="_blank" class="px-4 py-2 bg-slate-900 hover:bg-slate-850 text-amber-500 border border-slate-800 text-xs font-bold rounded-xl transition-all duration-300 flex items-center gap-1.5 whitespace-nowrap">
               <i class="fa-solid fa-up-right-from-square"></i> লাইভ সাইট দেখুন
             </a>
             
