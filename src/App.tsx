@@ -7,6 +7,7 @@ import {
   getEbooks,
   getPartners
 } from './data/dbSync';
+import { DEFAULT_SETTINGS } from './data/defaultData';
 import { AgencySettings, PortfolioItem, Course, Ebook, Partner } from './types';
 import { initPixel, trackPageView } from './utils/pixel';
 
@@ -68,13 +69,19 @@ export default function App() {
   const initializeAndFetch = async () => {
     setIsLoading(true);
     try {
-      // 1. Run Seeder
-      await seedDatabaseIfEmpty();
-      
-      // 2. Fetch All Data from Firestore
+      // 1. Run Seeder gracefully so any failures don't block loading
+      await seedDatabaseIfEmpty().catch((err) => {
+        console.error('Database seeding failed:', err);
+      });
+    } catch (err) {
+      console.error('Seeding process error:', err);
+    }
+
+    try {
+      // 2. Fetch All Data (Always execute even if seeding failed)
       await refreshGlobalData();
     } catch (err) {
-      console.error('Error in initial load:', err);
+      console.error('Error in initial fetch:', err);
     } finally {
       setIsLoading(false);
     }
@@ -83,20 +90,37 @@ export default function App() {
   const refreshGlobalData = async () => {
     try {
       const [siteSettings, portfolio, courseList, ebookList, partnerList] = await Promise.all([
-        getAgencySettings(),
-        getPortfolioItems(),
-        getCourses(),
-        getEbooks(),
-        getPartners()
+        getAgencySettings().catch((err) => {
+          console.error('getAgencySettings failed:', err);
+          return DEFAULT_SETTINGS;
+        }),
+        getPortfolioItems().catch((err) => {
+          console.error('getPortfolioItems failed:', err);
+          return [];
+        }),
+        getCourses().catch((err) => {
+          console.error('getCourses failed:', err);
+          return [];
+        }),
+        getEbooks().catch((err) => {
+          console.error('getEbooks failed:', err);
+          return [];
+        }),
+        getPartners().catch((err) => {
+          console.error('getPartners failed:', err);
+          return [];
+        })
       ]);
 
-      setSettings(siteSettings);
-      setPortfolioItems(portfolio);
-      setCourses(courseList);
-      setEbooks(ebookList);
-      setPartners(partnerList);
+      setSettings(siteSettings || DEFAULT_SETTINGS);
+      setPortfolioItems(portfolio && portfolio.length > 0 ? portfolio : []);
+      setCourses(courseList && courseList.length > 0 ? courseList : []);
+      setEbooks(ebookList && ebookList.length > 0 ? ebookList : []);
+      setPartners(partnerList || []);
     } catch (error) {
-      console.error('Error refreshing Firestore data:', error);
+      console.error('Error refreshing data:', error);
+      // Absolute guaranteed safe fallback so the spinner disappears
+      setSettings(DEFAULT_SETTINGS);
     }
   };
 

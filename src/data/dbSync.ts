@@ -424,11 +424,11 @@ export async function getPortfolioItems(): Promise<PortfolioItem[]> {
       snap.forEach((doc) => {
         items.push(doc.data() as PortfolioItem);
       });
-      return items;
+      return items.length > 0 ? items : DEFAULT_PORTFOLIO;
     }
   } catch (error) {
-    handleDbError(error, OperationType.LIST, 'portfolio');
-    return [];
+    console.error('Error fetching portfolio items, falling back to default:', error);
+    return DEFAULT_PORTFOLIO;
   }
 }
 
@@ -446,11 +446,11 @@ export async function getCourses(): Promise<Course[]> {
       snap.forEach((doc) => {
         items.push(doc.data() as Course);
       });
-      return items;
+      return items.length > 0 ? items : DEFAULT_COURSES;
     }
   } catch (error) {
-    handleDbError(error, OperationType.LIST, 'courses');
-    return [];
+    console.error('Error fetching courses, falling back to default:', error);
+    return DEFAULT_COURSES;
   }
 }
 
@@ -468,11 +468,11 @@ export async function getEbooks(): Promise<Ebook[]> {
       snap.forEach((doc) => {
         items.push(doc.data() as Ebook);
       });
-      return items;
+      return items.length > 0 ? items : DEFAULT_EBOOKS;
     }
   } catch (error) {
-    handleDbError(error, OperationType.LIST, 'ebooks');
-    return [];
+    console.error('Error fetching ebooks, falling back to default:', error);
+    return DEFAULT_EBOOKS;
   }
 }
 
@@ -493,7 +493,7 @@ export async function getEnrollments(): Promise<Enrollment[]> {
       return items;
     }
   } catch (error) {
-    handleDbError(error, OperationType.LIST, 'enrollments');
+    console.error('Error fetching enrollments:', error);
     return [];
   }
 }
@@ -515,7 +515,7 @@ export async function getContactSubmissions(): Promise<ContactSubmission[]> {
       return items;
     }
   } catch (error) {
-    handleDbError(error, OperationType.LIST, 'submissions');
+    console.error('Error fetching submissions:', error);
     return [];
   }
 }
