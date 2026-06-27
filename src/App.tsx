@@ -27,12 +27,54 @@ import { Sparkles, MessageSquare, PhoneCall, Mail, ShieldCheck } from 'lucide-re
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('home');
-  const [settings, setSettings] = useState<AgencySettings | null>(null);
-  const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [ebooks, setEbooks] = useState<Ebook[]>([]);
-  const [partners, setPartners] = useState<Partner[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [settings, setSettings] = useState<AgencySettings | null>(() => {
+    try {
+      const cached = localStorage.getItem('pixelcraft_cache_settings');
+      return cached ? JSON.parse(cached) : DEFAULT_SETTINGS;
+    } catch (e) {
+      return DEFAULT_SETTINGS;
+    }
+  });
+  const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>(() => {
+    try {
+      const cached = localStorage.getItem('pixelcraft_cache_portfolio');
+      return cached ? JSON.parse(cached) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+  const [courses, setCourses] = useState<Course[]>(() => {
+    try {
+      const cached = localStorage.getItem('pixelcraft_cache_courses');
+      return cached ? JSON.parse(cached) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+  const [ebooks, setEbooks] = useState<Ebook[]>(() => {
+    try {
+      const cached = localStorage.getItem('pixelcraft_cache_ebooks');
+      return cached ? JSON.parse(cached) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+  const [partners, setPartners] = useState<Partner[]>(() => {
+    try {
+      const cached = localStorage.getItem('pixelcraft_cache_partners');
+      return cached ? JSON.parse(cached) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+  const [isLoading, setIsLoading] = useState<boolean>(() => {
+    try {
+      // If we already have cached settings, don't show the full-screen loading spinner at all!
+      return !localStorage.getItem('pixelcraft_cache_settings');
+    } catch (e) {
+      return true;
+    }
+  });
 
   // Student Session
   const [studentSession, setStudentSession] = useState<{ name: string; email: string; phone: string } | null>(null);
@@ -67,7 +109,13 @@ export default function App() {
   }, [activeTab, settings]);
 
   const initializeAndFetch = async () => {
-    setIsLoading(true);
+    // Only show full screen loading spinner if we don't have settings loaded from cache yet
+    if (!settings || settings.agencyName === 'PixelCraft Agency') {
+      const cachedSettings = localStorage.getItem('pixelcraft_cache_settings');
+      if (!cachedSettings) {
+        setIsLoading(true);
+      }
+    }
     try {
       // 1. Run Seeder gracefully so any failures don't block loading
       await seedDatabaseIfEmpty().catch((err) => {

@@ -56,6 +56,35 @@ function handleDbError(error: unknown, operationType: OperationType, path: strin
   throw new Error(JSON.stringify(errInfo));
 }
 
+// --- LOCAL STORAGE CACHING HELPERS ---
+const CACHE_KEYS = {
+  SETTINGS: 'pixelcraft_cache_settings',
+  PORTFOLIO: 'pixelcraft_cache_portfolio',
+  COURSES: 'pixelcraft_cache_courses',
+  EBOOKS: 'pixelcraft_cache_ebooks',
+  PARTNERS: 'pixelcraft_cache_partners',
+};
+
+function getLocalCache<T>(key: string, defaultValue: T): T {
+  if (typeof window === 'undefined') return defaultValue;
+  try {
+    const cached = localStorage.getItem(key);
+    return cached ? JSON.parse(cached) : defaultValue;
+  } catch (e) {
+    console.error('Cache read error:', e);
+    return defaultValue;
+  }
+}
+
+function setLocalCache<T>(key: string, data: T): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (e) {
+    console.error('Cache write error:', e);
+  }
+}
+
 // --- SUPABASE DATA CONVERTERS ---
 function mapToSupabaseSettings(s: AgencySettings) {
   return {
@@ -367,21 +396,24 @@ export async function getAgencySettings(): Promise<AgencySettings> {
     if (isSupabaseEnabled && supabase) {
       const { data, error } = await supabase.from('settings').select('*').eq('id', 'settings').single();
       if (error) {
-        // Fallback if settings table hasn't been seeded yet
-        return DEFAULT_SETTINGS;
+        return getLocalCache<AgencySettings>(CACHE_KEYS.SETTINGS, DEFAULT_SETTINGS);
       }
-      return mapFromSupabaseSettings(data);
+      const settings = mapFromSupabaseSettings(data);
+      setLocalCache(CACHE_KEYS.SETTINGS, settings);
+      return settings;
     } else {
       const settingsRef = doc(db, 'settings', 'settings');
       const snap = await getDoc(settingsRef);
       if (snap.exists()) {
-        return snap.data() as AgencySettings;
+        const settings = snap.data() as AgencySettings;
+        setLocalCache(CACHE_KEYS.SETTINGS, settings);
+        return settings;
       }
-      return DEFAULT_SETTINGS;
+      return getLocalCache<AgencySettings>(CACHE_KEYS.SETTINGS, DEFAULT_SETTINGS);
     }
   } catch (error) {
-    console.error('Error fetching settings:', error);
-    return DEFAULT_SETTINGS;
+    console.error('Error fetching settings, falling back to cache:', error);
+    return getLocalCache<AgencySettings>(CACHE_KEYS.SETTINGS, DEFAULT_SETTINGS);
   }
 }
 
@@ -415,7 +447,9 @@ export async function getPortfolioItems(): Promise<PortfolioItem[]> {
     if (isSupabaseEnabled && supabase) {
       const { data, error } = await supabase.from('portfolio').select('*').order('created_at', { ascending: false });
       if (error) throw error;
-      return (data || []).map(mapFromSupabasePortfolio);
+      const items = (data || []).map(mapFromSupabasePortfolio);
+      setLocalCache(CACHE_KEYS.PORTFOLIO, items);
+      return items;
     } else {
       const colRef = collection(db, 'portfolio');
       const q = query(colRef, orderBy('createdAt', 'desc'));
@@ -424,11 +458,13 @@ export async function getPortfolioItems(): Promise<PortfolioItem[]> {
       snap.forEach((doc) => {
         items.push(doc.data() as PortfolioItem);
       });
-      return items.length > 0 ? items : DEFAULT_PORTFOLIO;
+      const result = items.length > 0 ? items : DEFAULT_PORTFOLIO;
+      setLocalCache(CACHE_KEYS.PORTFOLIO, result);
+      return result;
     }
   } catch (error) {
-    console.error('Error fetching portfolio items, falling back to default:', error);
-    return DEFAULT_PORTFOLIO;
+    console.error('Error fetching portfolio items, falling back to cache:', error);
+    return getLocalCache<PortfolioItem[]>(CACHE_KEYS.PORTFOLIO, DEFAULT_PORTFOLIO);
   }
 }
 
@@ -437,7 +473,9 @@ export async function getCourses(): Promise<Course[]> {
     if (isSupabaseEnabled && supabase) {
       const { data, error } = await supabase.from('courses').select('*').order('created_at', { ascending: false });
       if (error) throw error;
-      return (data || []).map(mapFromSupabaseCourse);
+      const items = (data || []).map(mapFromSupabaseCourse);
+      setLocalCache(CACHE_KEYS.COURSES, items);
+      return items;
     } else {
       const colRef = collection(db, 'courses');
       const q = query(colRef, orderBy('createdAt', 'desc'));
@@ -446,11 +484,13 @@ export async function getCourses(): Promise<Course[]> {
       snap.forEach((doc) => {
         items.push(doc.data() as Course);
       });
-      return items.length > 0 ? items : DEFAULT_COURSES;
+      const result = items.length > 0 ? items : DEFAULT_COURSES;
+      setLocalCache(CACHE_KEYS.COURSES, result);
+      return result;
     }
   } catch (error) {
-    console.error('Error fetching courses, falling back to default:', error);
-    return DEFAULT_COURSES;
+    console.error('Error fetching courses, falling back to cache:', error);
+    return getLocalCache<Course[]>(CACHE_KEYS.COURSES, DEFAULT_COURSES);
   }
 }
 
@@ -459,7 +499,9 @@ export async function getEbooks(): Promise<Ebook[]> {
     if (isSupabaseEnabled && supabase) {
       const { data, error } = await supabase.from('ebooks').select('*').order('created_at', { ascending: false });
       if (error) throw error;
-      return (data || []).map(mapFromSupabaseEbook);
+      const items = (data || []).map(mapFromSupabaseEbook);
+      setLocalCache(CACHE_KEYS.EBOOKS, items);
+      return items;
     } else {
       const colRef = collection(db, 'ebooks');
       const q = query(colRef, orderBy('createdAt', 'desc'));
@@ -468,11 +510,13 @@ export async function getEbooks(): Promise<Ebook[]> {
       snap.forEach((doc) => {
         items.push(doc.data() as Ebook);
       });
-      return items.length > 0 ? items : DEFAULT_EBOOKS;
+      const result = items.length > 0 ? items : DEFAULT_EBOOKS;
+      setLocalCache(CACHE_KEYS.EBOOKS, result);
+      return result;
     }
   } catch (error) {
-    console.error('Error fetching ebooks, falling back to default:', error);
-    return DEFAULT_EBOOKS;
+    console.error('Error fetching ebooks, falling back to cache:', error);
+    return getLocalCache<Ebook[]>(CACHE_KEYS.EBOOKS, DEFAULT_EBOOKS);
   }
 }
 
@@ -523,6 +567,9 @@ export async function getContactSubmissions(): Promise<ContactSubmission[]> {
 // --- SETTERS & MUTATIONS ---
 
 export async function updateAgencySettings(settings: AgencySettings): Promise<void> {
+  // Update local cache immediately so changes show instantly
+  setLocalCache(CACHE_KEYS.SETTINGS, settings);
+
   try {
     if (isSupabaseEnabled && supabase) {
       const { error } = await supabase.from('settings').upsert([mapToSupabaseSettings(settings)]);
@@ -561,6 +608,11 @@ export async function addPortfolioItem(item: Omit<PortfolioItem, 'id' | 'created
     id,
     createdAt: Date.now()
   };
+
+  // Update cache
+  const cached = getLocalCache<PortfolioItem[]>(CACHE_KEYS.PORTFOLIO, DEFAULT_PORTFOLIO);
+  setLocalCache(CACHE_KEYS.PORTFOLIO, [newItem, ...cached]);
+
   try {
     if (isSupabaseEnabled && supabase) {
       const { error } = await supabase.from('portfolio').insert([mapToSupabasePortfolio(newItem)]);
@@ -575,6 +627,11 @@ export async function addPortfolioItem(item: Omit<PortfolioItem, 'id' | 'created
 }
 
 export async function updatePortfolioItem(id: string, updates: Partial<PortfolioItem>): Promise<void> {
+  // Update cache
+  const cached = getLocalCache<PortfolioItem[]>(CACHE_KEYS.PORTFOLIO, DEFAULT_PORTFOLIO);
+  const updated = cached.map(item => item.id === id ? { ...item, ...updates } : item);
+  setLocalCache(CACHE_KEYS.PORTFOLIO, updated);
+
   try {
     if (isSupabaseEnabled && supabase) {
       // Map parameters
@@ -596,6 +653,11 @@ export async function updatePortfolioItem(id: string, updates: Partial<Portfolio
 }
 
 export async function deletePortfolioItem(id: string): Promise<void> {
+  // Update cache
+  const cached = getLocalCache<PortfolioItem[]>(CACHE_KEYS.PORTFOLIO, DEFAULT_PORTFOLIO);
+  const updated = cached.filter(item => item.id !== id);
+  setLocalCache(CACHE_KEYS.PORTFOLIO, updated);
+
   try {
     if (isSupabaseEnabled && supabase) {
       const { error } = await supabase.from('portfolio').delete().eq('id', id);
@@ -617,6 +679,17 @@ export async function saveCourse(course: Omit<Course, 'id' | 'createdAt'>, id?: 
     id: courseId,
     createdAt: Date.now()
   };
+
+  // Update cache
+  const cached = getLocalCache<Course[]>(CACHE_KEYS.COURSES, DEFAULT_COURSES);
+  let updated: Course[];
+  if (id) {
+    updated = cached.map(item => item.id === id ? data : item);
+  } else {
+    updated = [data, ...cached];
+  }
+  setLocalCache(CACHE_KEYS.COURSES, updated);
+
   try {
     if (isSupabaseEnabled && supabase) {
       const { error } = await supabase.from('courses').upsert([mapToSupabaseCourse(data)]);
@@ -631,6 +704,11 @@ export async function saveCourse(course: Omit<Course, 'id' | 'createdAt'>, id?: 
 }
 
 export async function deleteCourse(id: string): Promise<void> {
+  // Update cache
+  const cached = getLocalCache<Course[]>(CACHE_KEYS.COURSES, DEFAULT_COURSES);
+  const updated = cached.filter(item => item.id !== id);
+  setLocalCache(CACHE_KEYS.COURSES, updated);
+
   try {
     if (isSupabaseEnabled && supabase) {
       const { error } = await supabase.from('courses').delete().eq('id', id);
@@ -652,6 +730,17 @@ export async function saveEbook(ebook: Omit<Ebook, 'id' | 'createdAt'>, id?: str
     id: ebookId,
     createdAt: Date.now()
   };
+
+  // Update cache
+  const cached = getLocalCache<Ebook[]>(CACHE_KEYS.EBOOKS, DEFAULT_EBOOKS);
+  let updated: Ebook[];
+  if (id) {
+    updated = cached.map(item => item.id === id ? data : item);
+  } else {
+    updated = [data, ...cached];
+  }
+  setLocalCache(CACHE_KEYS.EBOOKS, updated);
+
   try {
     if (isSupabaseEnabled && supabase) {
       const { error } = await supabase.from('ebooks').upsert([mapToSupabaseEbook(data)]);
@@ -666,6 +755,11 @@ export async function saveEbook(ebook: Omit<Ebook, 'id' | 'createdAt'>, id?: str
 }
 
 export async function deleteEbook(id: string): Promise<void> {
+  // Update cache
+  const cached = getLocalCache<Ebook[]>(CACHE_KEYS.EBOOKS, DEFAULT_EBOOKS);
+  const updated = cached.filter(item => item.id !== id);
+  setLocalCache(CACHE_KEYS.EBOOKS, updated);
+
   try {
     if (isSupabaseEnabled && supabase) {
       const { error } = await supabase.from('ebooks').delete().eq('id', id);
@@ -786,7 +880,9 @@ export async function getPartners(): Promise<Partner[]> {
     if (isSupabaseEnabled && supabase) {
       const { data, error } = await supabase.from('partners').select('*').order('created_at', { ascending: false });
       if (error) throw error;
-      return (data || []).map(mapFromSupabasePartner);
+      const items = (data || []).map(mapFromSupabasePartner);
+      setLocalCache(CACHE_KEYS.PARTNERS, items);
+      return items;
     } else {
       const colRef = collection(db, 'partners');
       const q = query(colRef, orderBy('createdAt', 'desc'));
@@ -795,11 +891,12 @@ export async function getPartners(): Promise<Partner[]> {
       snap.forEach((doc) => {
         items.push(doc.data() as Partner);
       });
+      setLocalCache(CACHE_KEYS.PARTNERS, items);
       return items;
     }
   } catch (error) {
-    handleDbError(error, OperationType.LIST, 'partners');
-    return [];
+    console.error('Error fetching partners, falling back to cache:', error);
+    return getLocalCache<Partner[]>(CACHE_KEYS.PARTNERS, []);
   }
 }
 
@@ -810,6 +907,17 @@ export async function savePartner(partner: Omit<Partner, 'id' | 'createdAt'>, id
     id: partnerId,
     createdAt: Date.now()
   };
+
+  // Update cache
+  const cached = getLocalCache<Partner[]>(CACHE_KEYS.PARTNERS, []);
+  let updated: Partner[];
+  if (id) {
+    updated = cached.map(item => item.id === id ? data : item);
+  } else {
+    updated = [data, ...cached];
+  }
+  setLocalCache(CACHE_KEYS.PARTNERS, updated);
+
   try {
     if (isSupabaseEnabled && supabase) {
       const { error } = await supabase.from('partners').upsert([mapToSupabasePartner(data)]);
@@ -824,6 +932,11 @@ export async function savePartner(partner: Omit<Partner, 'id' | 'createdAt'>, id
 }
 
 export async function deletePartner(id: string): Promise<void> {
+  // Update cache
+  const cached = getLocalCache<Partner[]>(CACHE_KEYS.PARTNERS, []);
+  const updated = cached.filter(item => item.id !== id);
+  setLocalCache(CACHE_KEYS.PARTNERS, updated);
+
   try {
     if (isSupabaseEnabled && supabase) {
       const { error } = await supabase.from('partners').delete().eq('id', id);
