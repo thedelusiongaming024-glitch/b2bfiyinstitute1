@@ -1,0 +1,6 @@
+{
+  "name": "Agency Portfolio and Course Platform",
+  "description": "Professional agency website featuring Web Dev, Graphics, Video Editing, custom portfolio with filtering, e-learning courses, ebooks with manual mobile payments (bKash/Nagad/Rocket), automated student accounts, and a full-featured Admin Panel.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

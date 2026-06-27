@@ -1,0 +1,148 @@
+{
+  "entities": {
+    "AgencySettings": {
+      "title": "AgencySettings",
+      "description": "Configuration and settings of the agency",
+      "type": "object",
+      "properties": {
+        "agencyName": { "type": "string" },
+        "tagline": { "type": "string" },
+        "logoUrl": { "type": "string" },
+        "aboutText": { "type": "string" },
+        "whatsappNumber": { "type": "string" },
+        "footerText": { "type": "string" }
+      }
+    },
+    "AdminCredentials": {
+      "title": "AdminCredentials",
+      "description": "Admin console login credentials",
+      "type": "object",
+      "properties": {
+        "username": { "type": "string" },
+        "password": { "type": "string" }
+      }
+    },
+    "PortfolioItem": {
+      "title": "PortfolioItem",
+      "description": "Agency portfolio item showcasing work",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "liveUrl": { "type": "string" },
+        "createdAt": { "type": "number" }
+      }
+    },
+    "Course": {
+      "title": "Course",
+      "description": "An educational course offered by the agency",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "price": { "type": "number" },
+        "imageUrl": { "type": "string" },
+        "syllabus": { "type": "array" },
+        "createdAt": { "type": "number" }
+      }
+    },
+    "Ebook": {
+      "title": "Ebook",
+      "description": "An ebook published by the agency",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "imageUrl": { "type": "string" },
+        "downloadUrl": { "type": "string" },
+        "createdAt": { "type": "number" }
+      }
+    },
+    "Enrollment": {
+      "title": "Enrollment",
+      "description": "Student course enrollment and mobile payment details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "itemId": { "type": "string" },
+        "itemName": { "type": "string" },
+        "itemType": { "type": "string" },
+        "price": { "type": "number" },
+        "studentName": { "type": "string" },
+        "studentEmail": { "type": "string" },
+        "studentPhone": { "type": "string" },
+        "paymentMethod": { "type": "string" },
+        "transactionId": { "type": "string" },
+        "status": { "type": "string" },
+        "driveLink": { "type": "string" },
+        "createdAt": { "type": "number" }
+      }
+    },
+    "ContactSubmission": {
+      "title": "ContactSubmission",
+      "description": "Inquiries sent from the contact form",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "message": { "type": "string" },
+        "createdAt": { "type": "number" }
+      }
+    },
+    "Partner": {
+      "title": "Partner",
+      "description": "A client or partner company worked with",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "logoUrl": { "type": "string" },
+        "websiteUrl": { "type": "string" },
+        "createdAt": { "type": "number" }
+      }
+    }
+  },
+  "firestore": {
+    "settings/{documentId}": {
+      "schema": "AgencySettings",
+      "description": "Agency configuration and brand details"
+    },
+    "admin/{documentId}": {
+      "schema": "AdminCredentials",
+      "description": "Admin access credentials"
+    },
+    "portfolio/{documentId}": {
+      "schema": "PortfolioItem",
+      "description": "Items for the portfolio gallery"
+    },
+    "courses/{documentId}": {
+      "schema": "Course",
+      "description": "Available online courses"
+    },
+    "ebooks/{documentId}": {
+      "schema": "Ebook",
+      "description": "Available educational ebooks"
+    },
+    "enrollments/{documentId}": {
+      "schema": "Enrollment",
+      "description": "Course/Ebook manual payment registrations"
+    },
+    "submissions/{documentId}": {
+      "schema": "ContactSubmission",
+      "description": "User feedback and message submissions"
+    },
+    "partners/{documentId}": {
+      "schema": "Partner",
+      "description": "Client or partner companies worked with"
+    }
+  }
+}

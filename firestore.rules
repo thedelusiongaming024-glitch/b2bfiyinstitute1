@@ -1,0 +1,49 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Settings collection
+    match /settings/{document} {
+      allow read, write: if true;
+    }
+
+    // Admin credentials
+    match /admin/{document} {
+      allow read, write: if true;
+    }
+
+    // Portfolio items
+    match /portfolio/{document} {
+      allow read, write: if true;
+    }
+
+    // Courses
+    match /courses/{document} {
+      allow read, write: if true;
+    }
+
+    // Ebooks
+    match /ebooks/{document} {
+      allow read, write: if true;
+    }
+
+    // Enrollments
+    match /enrollments/{document} {
+      allow read, write: if true;
+    }
+
+    // submissions (Contact forms)
+    match /submissions/{document} {
+      allow read, write: if true;
+    }
+
+    // Partners/Clients
+    match /partners/{document} {
+      allow read, write: if true;
+    }
+  }
+}
