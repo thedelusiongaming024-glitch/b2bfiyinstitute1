@@ -1285,7 +1285,7 @@ export default function AdminPanel({
                   <h4 className="font-sans font-bold text-lg text-slate-900 dark:text-white">Global Agency Settings</h4>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                   <div>
                     <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-2">Agency Name</label>
                     <input
@@ -1302,6 +1302,14 @@ export default function AdminPanel({
                       value={editedSettings.logoUrl}
                       onChange={(newValue) => setEditedSettings({ ...editedSettings, logoUrl: newValue })}
                       placeholder="https://example.com/logo.png"
+                    />
+                  </div>
+                  <div>
+                    <ImageUploader 
+                      label="Favicon Logo"
+                      value={editedSettings.faviconUrl || ''}
+                      onChange={(newValue) => setEditedSettings({ ...editedSettings, faviconUrl: newValue })}
+                      placeholder="https://example.com/favicon.png"
                     />
                   </div>
                 </div>

@@ -2,6 +2,7 @@ export interface AgencySettings {
   id: string;
   agencyName: string;
   logoUrl: string;
+  faviconUrl?: string;
   whatsappNumber: string;
   bkashNumber: string;
   nagadNumber: string;

@@ -1,8 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
 
+declare global {
+  interface ImportMeta {
+    readonly env: any;
+  }
+}
+
 // Read keys from Vite environment variables (Vercel-ready)
-const supabaseUrl = (import.meta as any).env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = (import.meta as any).env.VITE_SUPABASE_ANON_KEY || '';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
 // Automatically detect if Supabase integration is active
 export const isSupabaseEnabled = !!(supabaseUrl && supabaseAnonKey);

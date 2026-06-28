@@ -112,7 +112,7 @@ export default function Ebooks({ ebooks, settings, onEnrollSuccess }: EbooksProp
   };
 
   return (
-    <section id="ebooks-section" className="py-20 bg-slate-50 border-t border-slate-100">
+    <section id="ebooks-section" className="py-20 bg-slate-50 dark:bg-slate-950/40 border-t border-slate-100 dark:border-slate-800/80 transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
@@ -120,10 +120,10 @@ export default function Ebooks({ ebooks, settings, onEnrollSuccess }: EbooksProp
           <h2 className="text-xs font-semibold text-emerald-600 uppercase tracking-widest animate-pulse">
             {t('ebooks.badge')}
           </h2>
-          <h3 className="font-sans font-bold text-3xl sm:text-4xl text-slate-950 tracking-tight">
+          <h3 className="font-sans font-bold text-3xl sm:text-4xl text-slate-950 dark:text-white tracking-tight">
             {t('ebooks.title')}
           </h3>
-          <p className="text-slate-600 text-sm leading-relaxed">
+          <p className="text-slate-600 dark:text-slate-350 text-sm leading-relaxed">
             {t('ebooks.subtitle')}
           </p>
         </div>
@@ -134,10 +134,10 @@ export default function Ebooks({ ebooks, settings, onEnrollSuccess }: EbooksProp
             <div
               key={book.id}
               onClick={() => handleSelectBook(book)}
-              className="group bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col justify-between"
+              className="group bg-white dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-100 dark:border-slate-800/80 shadow-sm hover:shadow-xl dark:hover:shadow-none hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col justify-between"
             >
               {/* Ebook Cover Visual */}
-              <div className="relative aspect-[3/4] bg-slate-100 overflow-hidden">
+              <div className="relative aspect-[3/4] bg-slate-100 dark:bg-slate-800 overflow-hidden">
                 <img
                   src={book.coverImage}
                   alt={book.title}
@@ -152,16 +152,16 @@ export default function Ebooks({ ebooks, settings, onEnrollSuccess }: EbooksProp
 
               {/* Title & Info */}
               <div className="p-5 space-y-3 flex-grow flex flex-col justify-between">
-                <h4 className="font-sans font-extrabold text-slate-900 text-sm leading-snug line-clamp-2">
+                <h4 className="font-sans font-extrabold text-slate-900 dark:text-white text-sm leading-snug line-clamp-2">
                   {book.title}
                 </h4>
 
-                <div className="flex items-center justify-between pt-2 border-t border-slate-50">
-                  <span className="font-mono font-extrabold text-emerald-600 text-sm">
+                <div className="flex items-center justify-between pt-2 border-t border-slate-50 dark:border-slate-800">
+                  <span className="font-mono font-extrabold text-emerald-600 dark:text-emerald-400 text-sm">
                     {language === 'en' ? '৳' : ''}{book.price.toLocaleString('en-BD')} {language === 'en' ? 'BDT' : 'টাকা'}
                   </span>
                   
-                  <span className="text-[10px] uppercase font-bold text-slate-400 group-hover:text-emerald-500 transition-colors">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 group-hover:text-emerald-500 transition-colors">
                     {language === 'en' ? 'Buy eBook ➔' : 'কিনুন ➔'}
                   </span>
                 </div>
@@ -172,8 +172,8 @@ export default function Ebooks({ ebooks, settings, onEnrollSuccess }: EbooksProp
 
         {/* Empty State */}
         {ebooks.length === 0 && (
-          <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
-            <p className="text-slate-400 font-medium">
+          <div className="text-center py-20 bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800">
+            <p className="text-slate-400 dark:text-slate-500 font-medium">
               {language === 'en' ? 'No eBooks uploaded yet.' : 'কোনো ই-বুক এখনও আপলোড করা হয়নি।'}
             </p>
           </div>
@@ -182,17 +182,17 @@ export default function Ebooks({ ebooks, settings, onEnrollSuccess }: EbooksProp
         {/* --- DETAILS MODAL --- */}
         {selectedBook && !isCheckoutOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-            <div className="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-150">
               <div className="p-6 sm:p-8 space-y-6">
                 
                 {/* Header */}
                 <div className="flex justify-between items-start">
-                  <h3 className="font-sans font-extrabold text-lg text-slate-900 leading-tight">
+                  <h3 className="font-sans font-extrabold text-lg text-slate-900 dark:text-white leading-tight">
                     {selectedBook.title}
                   </h3>
                   <button
                     onClick={() => setSelectedBook(null)}
-                    className="p-1 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                    className="p-1 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                   >
                     ✕
                   </button>
@@ -200,7 +200,7 @@ export default function Ebooks({ ebooks, settings, onEnrollSuccess }: EbooksProp
 
                 {/* Cover and details */}
                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-start">
-                  <div className="sm:col-span-5 relative aspect-[3/4] rounded-xl overflow-hidden shadow-md border border-slate-100 max-w-[160px] mx-auto sm:mx-0">
+                  <div className="sm:col-span-5 relative aspect-[3/4] rounded-xl overflow-hidden shadow-md border border-slate-100 dark:border-slate-800 max-w-[160px] mx-auto sm:mx-0">
                     <img
                       src={selectedBook.coverImage}
                       alt={selectedBook.title}
@@ -211,22 +211,22 @@ export default function Ebooks({ ebooks, settings, onEnrollSuccess }: EbooksProp
 
                   <div className="sm:col-span-7 space-y-4 text-left">
                     <div className="space-y-1.5">
-                      <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center space-x-1.5">
+                      <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center space-x-1.5">
                         <BookOpen className="w-3.5 h-3.5 text-emerald-500" />
                         <span>{language === 'en' ? 'Description' : 'বিবরণ'}</span>
                       </h4>
-                      <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
+                      <p className="text-slate-600 dark:text-slate-350 text-xs sm:text-sm leading-relaxed">
                         {selectedBook.description}
                       </p>
                     </div>
 
-                    <div className="p-3.5 bg-slate-50 border border-slate-100 rounded-2xl space-y-1">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase">{language === 'en' ? 'Deliverables' : 'যা যা পাবেন'}</p>
-                      <p className="text-xs text-slate-700 font-semibold flex items-center space-x-2">
+                    <div className="p-3.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-850 rounded-2xl space-y-1">
+                      <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase">{language === 'en' ? 'Deliverables' : 'যা যা পাবেন'}</p>
+                      <p className="text-xs text-slate-700 dark:text-slate-300 font-semibold flex items-center space-x-2">
                         <span className="text-emerald-500">✓</span>
                         <span>{language === 'en' ? 'High-Quality PDF & Epub formats' : 'হাই-কোয়ালিটি পিডিএফ এবং ই-পাব ফরম্যাট'}</span>
                       </p>
-                      <p className="text-xs text-slate-700 font-semibold flex items-center space-x-2">
+                      <p className="text-xs text-slate-700 dark:text-slate-300 font-semibold flex items-center space-x-2">
                         <span className="text-emerald-500">✓</span>
                         <span>{language === 'en' ? 'Permanent lifetime cloud access' : 'লাইফটাইম ক্লাউড স্টোরেজ অ্যাক্সেস'}</span>
                       </p>
@@ -235,10 +235,10 @@ export default function Ebooks({ ebooks, settings, onEnrollSuccess }: EbooksProp
                 </div>
 
                 {/* Price and Action */}
-                <div className="flex items-center justify-between pt-6 border-t border-slate-100">
+                <div className="flex items-center justify-between pt-6 border-t border-slate-100 dark:border-slate-800">
                   <div className="flex flex-col text-left">
-                    <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">{language === 'en' ? 'Price' : 'মূল্য'}</span>
-                    <span className="font-mono font-extrabold text-xl text-slate-900">
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-bold tracking-wider">{language === 'en' ? 'Price' : 'মূল্য'}</span>
+                    <span className="font-mono font-extrabold text-xl text-slate-900 dark:text-white">
                       {language === 'en' ? '৳' : ''}{selectedBook.price.toLocaleString('en-BD')} {language === 'en' ? 'BDT' : 'টাকা'}
                     </span>
                   </div>

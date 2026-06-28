@@ -2,14 +2,15 @@ import { AgencySettings, PortfolioItem, Course, Ebook } from '../types';
 
 export const DEFAULT_SETTINGS: AgencySettings = {
   id: 'settings',
-  agencyName: 'PixelCraft Agency',
+  agencyName: 'B2Bfiy Institute',
   logoUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=200&q=80',
+  faviconUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=32&q=80',
   whatsappNumber: '8801700000000',
   bkashNumber: '01700-000000 (Personal)',
   nagadNumber: '01800-000000 (Personal)',
   rocketNumber: '01900-000000-0 (Personal)',
   upayNumber: '01500-000000 (Personal)',
-  footerText: '© 2026 PixelCraft Agency. All rights reserved. Empowering your brand with custom digital solutions.',
+  footerText: '© 2026 B2Bfiy Institute. All rights reserved. Empowering your brand with custom digital solutions.',
   aboutText: 'We are a premier digital agency specializing in high-impact creative services. From full-stack web platforms and bespoke branding to high-energy social media ads and cinematic video production, our mission is to elevate your digital presence.',
   heroTitle: 'Crafting Next-Gen Digital Experiences',
   heroSubtitle: 'Transforming ideas into high-converting websites, visual designs, and marketing campaigns with industry-leading experts.',

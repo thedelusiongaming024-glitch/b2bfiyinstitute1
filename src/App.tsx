@@ -94,8 +94,20 @@ export default function App() {
     initializeAndFetch();
   }, []);
 
-  // Facebook Pixel tracking initialization
+  // Update browser document title, favicon, and Facebook Pixel tracking initialization
   useEffect(() => {
+    if (settings?.agencyName) {
+      document.title = settings.agencyName;
+    }
+    if (settings?.faviconUrl) {
+      let link: HTMLLinkElement | null = document.querySelector("link[rel~='icon']");
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.head.appendChild(link);
+      }
+      link.href = settings.faviconUrl;
+    }
     if (settings?.facebookPixelId) {
       initPixel(settings.facebookPixelId);
     }
@@ -110,7 +122,7 @@ export default function App() {
 
   const initializeAndFetch = async () => {
     // Only show full screen loading spinner if we don't have settings loaded from cache yet
-    if (!settings || settings.agencyName === 'PixelCraft Agency') {
+    if (!settings || settings.agencyName === 'B2Bfiy Institute' || settings.agencyName === 'PixelCraft Agency') {
       const cachedSettings = localStorage.getItem('pixelcraft_cache_settings');
       if (!cachedSettings) {
         setIsLoading(true);
