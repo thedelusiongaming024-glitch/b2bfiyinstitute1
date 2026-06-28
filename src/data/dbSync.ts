@@ -1,5 +1,6 @@
 import { 
-  db, 
+  getDb, 
+  ensureDbConnected,
   collection, 
   doc, 
   getDocs, 
@@ -13,6 +14,34 @@ import {
 } from '../firebase';
 import { isSupabaseEnabled, supabase } from '../supabase';
 import { hashPassword } from '../utils/crypto';
+
+let db = getDb();
+
+let supabaseSchemaMissing = false;
+
+export function getSupabaseSchemaMissing() {
+  return supabaseSchemaMissing;
+}
+
+export function setSupabaseSchemaMissing(val: boolean) {
+  supabaseSchemaMissing = val;
+}
+
+function handleSupabaseError(error: any, context: string) {
+  if (error && (error.code === 'PGRST205' || (error.message && String(error.message).includes('schema cache')))) {
+    supabaseSchemaMissing = true;
+  }
+  if (supabaseSchemaMissing) {
+    console.info(`Supabase setup status: missing tables. Falling back to local cache/Firestore for: ${context}`);
+  } else {
+    console.warn(`Error fetching ${context}, falling back to cache:`, error);
+  }
+}
+
+async function syncDb() {
+  await ensureDbConnected();
+  db = getDb();
+}
 import { 
   AgencySettings, 
   PortfolioItem, 
@@ -83,6 +112,26 @@ function setLocalCache<T>(key: string, data: T): void {
   } catch (e) {
     console.error('Cache write error:', e);
   }
+}
+
+// --- SANITIZE FOR FIRESTORE (REMOVES UNDEFINED VALUES TO PREVENT WRITE ERRORS) ---
+export function sanitizeForFirestore<T>(obj: T): T {
+  if (obj === null || obj === undefined) return obj;
+  if (Array.isArray(obj)) {
+    return obj.map(item => sanitizeForFirestore(item)) as unknown as T;
+  }
+  if (typeof obj === 'object') {
+    const copy = { ...obj } as any;
+    Object.keys(copy).forEach(key => {
+      if (copy[key] === undefined) {
+        delete copy[key];
+      } else if (typeof copy[key] === 'object' && copy[key] !== null) {
+        copy[key] = sanitizeForFirestore(copy[key]);
+      }
+    });
+    return copy;
+  }
+  return obj;
 }
 
 // --- SUPABASE DATA CONVERTERS ---
@@ -332,6 +381,7 @@ export async function seedDatabaseIfEmpty() {
       }
     } else {
       // Seed Firestore fallback
+      await syncDb();
       const settingsRef = doc(db, 'settings', 'settings');
       const adminRef = doc(db, 'admin', 'credentials');
       const portfolioCol = collection(db, 'portfolio');
@@ -349,29 +399,29 @@ export async function seedDatabaseIfEmpty() {
       const seedPromises: Promise<any>[] = [];
 
       if (settingsSnap && !settingsSnap.exists()) {
-        seedPromises.push(setDoc(settingsRef, DEFAULT_SETTINGS));
+        seedPromises.push(setDoc(settingsRef, sanitizeForFirestore(DEFAULT_SETTINGS)));
       }
 
       if (adminSnap && !adminSnap.exists()) {
         const defaultHash = await hashPassword('admin1');
-        seedPromises.push(setDoc(adminRef, { username: 'admin', password: defaultHash }));
+        seedPromises.push(setDoc(adminRef, sanitizeForFirestore({ username: 'admin', password: defaultHash })));
       }
 
       if (portfolioSnap && portfolioSnap.empty) {
         for (const item of DEFAULT_PORTFOLIO) {
-          seedPromises.push(setDoc(doc(portfolioCol, item.id), item));
+          seedPromises.push(setDoc(doc(portfolioCol, item.id), sanitizeForFirestore(item)));
         }
       }
 
       if (coursesSnap && coursesSnap.empty) {
         for (const item of DEFAULT_COURSES) {
-          seedPromises.push(setDoc(doc(coursesCol, item.id), item));
+          seedPromises.push(setDoc(doc(coursesCol, item.id), sanitizeForFirestore(item)));
         }
       }
 
       if (ebooksSnap && ebooksSnap.empty) {
         for (const item of DEFAULT_EBOOKS) {
-          seedPromises.push(setDoc(doc(ebooksCol, item.id), item));
+          seedPromises.push(setDoc(doc(ebooksCol, item.id), sanitizeForFirestore(item)));
         }
       }
 
@@ -396,13 +446,14 @@ export async function getAgencySettings(): Promise<AgencySettings> {
     if (isSupabaseEnabled && supabase) {
       const { data, error } = await supabase.from('settings').select('*').eq('id', 'settings').single();
       if (error) {
+        handleSupabaseError(error, 'settings');
         return getLocalCache<AgencySettings>(CACHE_KEYS.SETTINGS, DEFAULT_SETTINGS);
       }
       const settings = mapFromSupabaseSettings(data);
       setLocalCache(CACHE_KEYS.SETTINGS, settings);
       return settings;
     } else {
-      const settingsRef = doc(db, 'settings', 'settings');
+      await syncDb();      const settingsRef = doc(db, 'settings', 'settings');
       const snap = await getDoc(settingsRef);
       if (snap.exists()) {
         const settings = snap.data() as AgencySettings;
@@ -412,7 +463,7 @@ export async function getAgencySettings(): Promise<AgencySettings> {
       return getLocalCache<AgencySettings>(CACHE_KEYS.SETTINGS, DEFAULT_SETTINGS);
     }
   } catch (error) {
-    console.error('Error fetching settings, falling back to cache:', error);
+    handleSupabaseError(error, 'settings');
     return getLocalCache<AgencySettings>(CACHE_KEYS.SETTINGS, DEFAULT_SETTINGS);
   }
 }
@@ -422,12 +473,15 @@ export async function getAdminCredentials() {
     if (isSupabaseEnabled && supabase) {
       const { data, error } = await supabase.from('admin').select('*').limit(1);
       if (error || !data || data.length === 0) {
+        if (error) {
+          handleSupabaseError(error, 'admin credentials');
+        }
         const defaultHash = await hashPassword('admin1');
         return { username: 'admin', password: defaultHash };
       }
       return { username: data[0].username, password: data[0].password };
     } else {
-      const adminRef = doc(db, 'admin', 'credentials');
+      await syncDb();      const adminRef = doc(db, 'admin', 'credentials');
       const snap = await getDoc(adminRef);
       if (snap.exists()) {
         return snap.data() as { username: string; password?: string };
@@ -436,7 +490,7 @@ export async function getAdminCredentials() {
       return { username: 'admin', password: defaultHash };
     }
   } catch (error) {
-    console.error('Error fetching admin credentials:', error);
+    handleSupabaseError(error, 'admin credentials');
     const defaultHash = await hashPassword('admin1');
     return { username: 'admin', password: defaultHash };
   }
@@ -451,19 +505,19 @@ export async function getPortfolioItems(): Promise<PortfolioItem[]> {
       setLocalCache(CACHE_KEYS.PORTFOLIO, items);
       return items;
     } else {
-      const colRef = collection(db, 'portfolio');
-      const q = query(colRef, orderBy('createdAt', 'desc'));
-      const snap = await getDocs(q);
+      await syncDb();      const colRef = collection(db, 'portfolio');
+      const snap = await getDocs(colRef);
       const items: PortfolioItem[] = [];
       snap.forEach((doc) => {
         items.push(doc.data() as PortfolioItem);
       });
+      items.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
       const result = items.length > 0 ? items : DEFAULT_PORTFOLIO;
       setLocalCache(CACHE_KEYS.PORTFOLIO, result);
       return result;
     }
   } catch (error) {
-    console.error('Error fetching portfolio items, falling back to cache:', error);
+    handleSupabaseError(error, 'portfolio items');
     return getLocalCache<PortfolioItem[]>(CACHE_KEYS.PORTFOLIO, DEFAULT_PORTFOLIO);
   }
 }
@@ -477,19 +531,19 @@ export async function getCourses(): Promise<Course[]> {
       setLocalCache(CACHE_KEYS.COURSES, items);
       return items;
     } else {
-      const colRef = collection(db, 'courses');
-      const q = query(colRef, orderBy('createdAt', 'desc'));
-      const snap = await getDocs(q);
+      await syncDb();      const colRef = collection(db, 'courses');
+      const snap = await getDocs(colRef);
       const items: Course[] = [];
       snap.forEach((doc) => {
         items.push(doc.data() as Course);
       });
+      items.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
       const result = items.length > 0 ? items : DEFAULT_COURSES;
       setLocalCache(CACHE_KEYS.COURSES, result);
       return result;
     }
   } catch (error) {
-    console.error('Error fetching courses, falling back to cache:', error);
+    handleSupabaseError(error, 'courses');
     return getLocalCache<Course[]>(CACHE_KEYS.COURSES, DEFAULT_COURSES);
   }
 }
@@ -503,19 +557,19 @@ export async function getEbooks(): Promise<Ebook[]> {
       setLocalCache(CACHE_KEYS.EBOOKS, items);
       return items;
     } else {
-      const colRef = collection(db, 'ebooks');
-      const q = query(colRef, orderBy('createdAt', 'desc'));
-      const snap = await getDocs(q);
+      await syncDb();      const colRef = collection(db, 'ebooks');
+      const snap = await getDocs(colRef);
       const items: Ebook[] = [];
       snap.forEach((doc) => {
         items.push(doc.data() as Ebook);
       });
+      items.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
       const result = items.length > 0 ? items : DEFAULT_EBOOKS;
       setLocalCache(CACHE_KEYS.EBOOKS, result);
       return result;
     }
   } catch (error) {
-    console.error('Error fetching ebooks, falling back to cache:', error);
+    handleSupabaseError(error, 'ebooks');
     return getLocalCache<Ebook[]>(CACHE_KEYS.EBOOKS, DEFAULT_EBOOKS);
   }
 }
@@ -527,17 +581,17 @@ export async function getEnrollments(): Promise<Enrollment[]> {
       if (error) throw error;
       return (data || []).map(mapFromSupabaseEnrollment);
     } else {
-      const colRef = collection(db, 'enrollments');
-      const q = query(colRef, orderBy('createdAt', 'desc'));
-      const snap = await getDocs(q);
+      await syncDb();      const colRef = collection(db, 'enrollments');
+      const snap = await getDocs(colRef);
       const items: Enrollment[] = [];
       snap.forEach((doc) => {
         items.push(doc.data() as Enrollment);
       });
+      items.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
       return items;
     }
   } catch (error) {
-    console.error('Error fetching enrollments:', error);
+    handleSupabaseError(error, 'enrollments');
     return [];
   }
 }
@@ -549,17 +603,17 @@ export async function getContactSubmissions(): Promise<ContactSubmission[]> {
       if (error) throw error;
       return (data || []).map(mapFromSupabaseSubmission);
     } else {
-      const colRef = collection(db, 'submissions');
-      const q = query(colRef, orderBy('createdAt', 'desc'));
-      const snap = await getDocs(q);
+      await syncDb();      const colRef = collection(db, 'submissions');
+      const snap = await getDocs(colRef);
       const items: ContactSubmission[] = [];
       snap.forEach((doc) => {
         items.push(doc.data() as ContactSubmission);
       });
+      items.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
       return items;
     }
   } catch (error) {
-    console.error('Error fetching submissions:', error);
+    handleSupabaseError(error, 'submissions');
     return [];
   }
 }
@@ -575,8 +629,9 @@ export async function updateAgencySettings(settings: AgencySettings): Promise<vo
       const { error } = await supabase.from('settings').upsert([mapToSupabaseSettings(settings)]);
       if (error) throw error;
     } else {
+      await syncDb();
       const settingsRef = doc(db, 'settings', 'settings');
-      await setDoc(settingsRef, settings);
+      await setDoc(settingsRef, sanitizeForFirestore(settings));
     }
   } catch (error) {
     handleDbError(error, OperationType.WRITE, 'settings/settings');
@@ -592,6 +647,7 @@ export async function updateAdminCredentials(username: string, passwordPlain: st
       const { error } = await supabase.from('admin').upsert([{ username, password: passwordHash }]);
       if (error) throw error;
     } else {
+      await syncDb();
       const adminRef = doc(db, 'admin', 'credentials');
       await setDoc(adminRef, { username, password: passwordHash });
     }
@@ -618,8 +674,9 @@ export async function addPortfolioItem(item: Omit<PortfolioItem, 'id' | 'created
       const { error } = await supabase.from('portfolio').insert([mapToSupabasePortfolio(newItem)]);
       if (error) throw error;
     } else {
+      await syncDb();
       const colRef = collection(db, 'portfolio');
-      await setDoc(doc(colRef, id), newItem);
+      await setDoc(doc(colRef, id), sanitizeForFirestore(newItem));
     }
   } catch (error) {
     handleDbError(error, OperationType.WRITE, `portfolio/${id}`);
@@ -644,8 +701,9 @@ export async function updatePortfolioItem(id: string, updates: Partial<Portfolio
       const { error } = await supabase.from('portfolio').update(mappedUpdates).eq('id', id);
       if (error) throw error;
     } else {
+      await syncDb();
       const docRef = doc(db, 'portfolio', id);
-      await updateDoc(docRef, updates);
+      await updateDoc(docRef, sanitizeForFirestore(updates));
     }
   } catch (error) {
     handleDbError(error, OperationType.WRITE, `portfolio/${id}`);
@@ -663,6 +721,7 @@ export async function deletePortfolioItem(id: string): Promise<void> {
       const { error } = await supabase.from('portfolio').delete().eq('id', id);
       if (error) throw error;
     } else {
+      await syncDb();
       const docRef = doc(db, 'portfolio', id);
       await deleteDoc(docRef);
     }
@@ -695,8 +754,9 @@ export async function saveCourse(course: Omit<Course, 'id' | 'createdAt'>, id?: 
       const { error } = await supabase.from('courses').upsert([mapToSupabaseCourse(data)]);
       if (error) throw error;
     } else {
+      await syncDb();
       const colRef = collection(db, 'courses');
-      await setDoc(doc(colRef, courseId), data);
+      await setDoc(doc(colRef, courseId), sanitizeForFirestore(data));
     }
   } catch (error) {
     handleDbError(error, OperationType.WRITE, `courses/${courseId}`);
@@ -714,6 +774,7 @@ export async function deleteCourse(id: string): Promise<void> {
       const { error } = await supabase.from('courses').delete().eq('id', id);
       if (error) throw error;
     } else {
+      await syncDb();
       const docRef = doc(db, 'courses', id);
       await deleteDoc(docRef);
     }
@@ -746,8 +807,9 @@ export async function saveEbook(ebook: Omit<Ebook, 'id' | 'createdAt'>, id?: str
       const { error } = await supabase.from('ebooks').upsert([mapToSupabaseEbook(data)]);
       if (error) throw error;
     } else {
+      await syncDb();
       const colRef = collection(db, 'ebooks');
-      await setDoc(doc(colRef, ebookId), data);
+      await setDoc(doc(colRef, ebookId), sanitizeForFirestore(data));
     }
   } catch (error) {
     handleDbError(error, OperationType.WRITE, `ebooks/${ebookId}`);
@@ -765,6 +827,7 @@ export async function deleteEbook(id: string): Promise<void> {
       const { error } = await supabase.from('ebooks').delete().eq('id', id);
       if (error) throw error;
     } else {
+      await syncDb();
       const docRef = doc(db, 'ebooks', id);
       await deleteDoc(docRef);
     }
@@ -786,8 +849,9 @@ export async function addContactSubmission(submission: Omit<ContactSubmission, '
       const { error } = await supabase.from('submissions').insert([mapToSupabaseSubmission(data)]);
       if (error) throw error;
     } else {
+      await syncDb();
       const colRef = collection(db, 'submissions');
-      await setDoc(doc(colRef, id), data);
+      await setDoc(doc(colRef, id), sanitizeForFirestore(data));
     }
   } catch (error) {
     handleDbError(error, OperationType.WRITE, `submissions/${id}`);
@@ -813,8 +877,9 @@ export async function createStudentEnrollment(
       const { error } = await supabase.from('enrollments').insert([mapToSupabaseEnrollment(newEnrollment)]);
       if (error) throw error;
     } else {
+      await syncDb();
       const colRef = collection(db, 'enrollments');
-      await setDoc(doc(colRef, id), newEnrollment);
+      await setDoc(doc(colRef, id), sanitizeForFirestore(newEnrollment));
     }
   } catch (error) {
     handleDbError(error, OperationType.WRITE, `enrollments/${id}`);
@@ -831,6 +896,7 @@ export async function updateEnrollmentStatus(
       const { error } = await supabase.from('enrollments').update({ status, drive_link: driveLink }).eq('id', id);
       if (error) throw error;
     } else {
+      await syncDb();
       const docRef = doc(db, 'enrollments', id);
       await updateDoc(docRef, { status, driveLink });
     }
@@ -853,6 +919,7 @@ export async function getStudentEnrollments(phone: string, email: string): Promi
         .map(mapFromSupabaseEnrollment)
         .filter((item) => item.studentPhone.trim() === phone.trim());
     } else {
+      await syncDb();
       const colRef = collection(db, 'enrollments');
       const q = query(
         colRef, 
@@ -884,18 +951,18 @@ export async function getPartners(): Promise<Partner[]> {
       setLocalCache(CACHE_KEYS.PARTNERS, items);
       return items;
     } else {
-      const colRef = collection(db, 'partners');
-      const q = query(colRef, orderBy('createdAt', 'desc'));
-      const snap = await getDocs(q);
+      await syncDb();      const colRef = collection(db, 'partners');
+      const snap = await getDocs(colRef);
       const items: Partner[] = [];
       snap.forEach((doc) => {
         items.push(doc.data() as Partner);
       });
+      items.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
       setLocalCache(CACHE_KEYS.PARTNERS, items);
       return items;
     }
   } catch (error) {
-    console.error('Error fetching partners, falling back to cache:', error);
+    handleSupabaseError(error, 'partners');
     return getLocalCache<Partner[]>(CACHE_KEYS.PARTNERS, []);
   }
 }
@@ -923,8 +990,9 @@ export async function savePartner(partner: Omit<Partner, 'id' | 'createdAt'>, id
       const { error } = await supabase.from('partners').upsert([mapToSupabasePartner(data)]);
       if (error) throw error;
     } else {
+      await syncDb();
       const colRef = collection(db, 'partners');
-      await setDoc(doc(colRef, partnerId), data);
+      await setDoc(doc(colRef, partnerId), sanitizeForFirestore(data));
     }
   } catch (error) {
     handleDbError(error, OperationType.WRITE, `partners/${partnerId}`);
@@ -942,6 +1010,7 @@ export async function deletePartner(id: string): Promise<void> {
       const { error } = await supabase.from('partners').delete().eq('id', id);
       if (error) throw error;
     } else {
+      await syncDb();
       const docRef = doc(db, 'partners', id);
       await deleteDoc(docRef);
     }

@@ -139,23 +139,23 @@ export default function App() {
     try {
       const [siteSettings, portfolio, courseList, ebookList, partnerList] = await Promise.all([
         getAgencySettings().catch((err) => {
-          console.error('getAgencySettings failed:', err);
+          console.warn('getAgencySettings failed:', err);
           return DEFAULT_SETTINGS;
         }),
         getPortfolioItems().catch((err) => {
-          console.error('getPortfolioItems failed:', err);
+          console.warn('getPortfolioItems failed:', err);
           return [];
         }),
         getCourses().catch((err) => {
-          console.error('getCourses failed:', err);
+          console.warn('getCourses failed:', err);
           return [];
         }),
         getEbooks().catch((err) => {
-          console.error('getEbooks failed:', err);
+          console.warn('getEbooks failed:', err);
           return [];
         }),
         getPartners().catch((err) => {
-          console.error('getPartners failed:', err);
+          console.warn('getPartners failed:', err);
           return [];
         })
       ]);

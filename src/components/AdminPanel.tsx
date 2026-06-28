@@ -11,6 +11,7 @@ import {
   Plus, 
   Edit, 
   Check, 
+  Copy,
   X, 
   FileText,
   DollarSign,
@@ -52,8 +53,11 @@ import {
   updateEnrollmentStatus,
   getContactSubmissions,
   savePartner,
-  deletePartner
+  deletePartner,
+  getSupabaseSchemaMissing
 } from '../data/dbSync';
+import { isSupabaseEnabled } from '../supabase';
+import { SUPABASE_SQL_SCHEMA } from '../data/supabaseSql';
 import { verifyPassword } from '../utils/crypto';
 
 interface ImageUploaderProps {
@@ -261,6 +265,14 @@ export default function AdminPanel({
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
   const [contacts, setContacts] = useState<ContactSubmission[]>([]);
   const [isLoadingDynamicData, setIsLoadingDynamicData] = useState(false);
+  const [isSupabaseSchemaMissingState, setIsSupabaseSchemaMissingState] = useState(false);
+  const [copiedSql, setCopiedSql] = useState(false);
+
+  const handleCopySql = () => {
+    navigator.clipboard.writeText(SUPABASE_SQL_SCHEMA);
+    setCopiedSql(true);
+    setTimeout(() => setCopiedSql(false), 2500);
+  };
 
   // Search & Filter state for Student Orders
   const [orderSearchQuery, setOrderSearchQuery] = useState('');
@@ -357,6 +369,10 @@ export default function AdminPanel({
     }
   }, [isAuthenticated]);
 
+  useEffect(() => {
+    setIsSupabaseSchemaMissingState(getSupabaseSchemaMissing());
+  }, [isAuthenticated, enrollments, contacts]);
+
   const fetchAdminData = async () => {
     setIsLoadingDynamicData(true);
     try {
@@ -392,6 +408,32 @@ export default function AdminPanel({
     setTimeout(() => setToastMessage(''), 3000);
   };
 
+  const showError = (prefix: string, err: any) => {
+    console.error(prefix, err);
+    let errorMsg = prefix;
+    if (err) {
+      let detail = '';
+      if (err.message) {
+        try {
+          const parsed = JSON.parse(err.message);
+          detail = parsed && parsed.error ? parsed.error : err.message;
+        } catch (e) {
+          detail = err.message;
+        }
+      } else if (typeof err === 'object') {
+        try {
+          detail = JSON.stringify(err);
+        } catch (e) {
+          detail = String(err);
+        }
+      } else {
+        detail = String(err);
+      }
+      errorMsg += ` (${detail})`;
+    }
+    showToast(errorMsg);
+  };
+
   // --- LOGIN SUBMIT ---
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -422,7 +464,7 @@ export default function AdminPanel({
       showToast('Global Site Settings Updated Successfully!');
       onRefreshData();
     } catch (err) {
-      showToast('Failed to update site settings.');
+      showError('Failed to update site settings.', err);
     }
   };
 
@@ -461,7 +503,7 @@ export default function AdminPanel({
       setIsPortfolioModalOpen(false);
       onRefreshData();
     } catch (err) {
-      showToast('Failed to save portfolio item.');
+      showError('Failed to save portfolio item.', err);
     }
   };
 
@@ -472,7 +514,7 @@ export default function AdminPanel({
         showToast('Portfolio Item Deleted Successfully!');
         onRefreshData();
       } catch (err) {
-        showToast('Failed to delete item.');
+        showError('Failed to delete item.', err);
       }
     }
   };
@@ -526,7 +568,7 @@ export default function AdminPanel({
       setIsCourseModalOpen(false);
       onRefreshData();
     } catch (err) {
-      showToast('Failed to save course.');
+      showError('Failed to save course.', err);
     }
   };
 
@@ -537,7 +579,7 @@ export default function AdminPanel({
         showToast('Course Deleted Successfully!');
         onRefreshData();
       } catch (err) {
-        showToast('Failed to delete course.');
+        showError('Failed to delete course.', err);
       }
     }
   };
@@ -583,7 +625,7 @@ export default function AdminPanel({
       setIsEbookModalOpen(false);
       onRefreshData();
     } catch (err) {
-      showToast('Failed to save ebook.');
+      showError('Failed to save ebook.', err);
     }
   };
 
@@ -594,7 +636,7 @@ export default function AdminPanel({
         showToast('eBook Deleted Successfully!');
         onRefreshData();
       } catch (err) {
-        showToast('Failed to delete eBook.');
+        showError('Failed to delete eBook.', err);
       }
     }
   };
@@ -631,7 +673,7 @@ export default function AdminPanel({
       setIsPartnerModalOpen(false);
       onRefreshData();
     } catch (err) {
-      showToast('Failed to save partner.');
+      showError('Failed to save partner.', err);
     }
   };
 
@@ -642,7 +684,7 @@ export default function AdminPanel({
         showToast('Partner Deleted Successfully!');
         onRefreshData();
       } catch (err) {
-        showToast('Failed to delete partner.');
+        showError('Failed to delete partner.', err);
       }
     }
   };
@@ -660,7 +702,7 @@ export default function AdminPanel({
       showToast(`Enrollment Request Successfully ${decision === 'approved' ? 'Approved' : 'Rejected'}!`);
       fetchAdminData();
     } catch (err) {
-      showToast('Failed to complete decision.');
+      showError('Failed to complete decision.', err);
     }
   };
 
@@ -677,7 +719,7 @@ export default function AdminPanel({
       showToast('Admin Credentials Updated Successfully! Keep them safe.');
       setNewAdminPassword('');
     } catch (err) {
-      showToast('Failed to update credentials.');
+      showError('Failed to update credentials.', err);
     }
   };
 
@@ -826,6 +868,56 @@ export default function AdminPanel({
           {/* Admin Contents Window */}
           <div className="lg:col-span-9 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm text-left transition-colors">
             
+            {/* Supabase Schema Setup Helper Banner */}
+            {isSupabaseEnabled && isSupabaseSchemaMissingState && (
+              <div className="mb-6 p-5 sm:p-6 bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 rounded-2xl transition-all">
+                <div className="flex items-start space-x-3">
+                  <div className="p-2.5 bg-amber-100 dark:bg-amber-900/30 text-amber-650 dark:text-amber-400 rounded-xl">
+                    <AlertCircle className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <h4 className="font-sans font-extrabold text-base text-amber-850 dark:text-amber-300">
+                      Supabase ডাটাবেজ টেবিল সেটআপ করা প্রয়োজন 🛠️
+                    </h4>
+                    <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
+                      আপনার Supabase ডাটাবেজে প্রয়োজনীয় টেবিলগুলো এখনো তৈরি করা হয়নি (যেমন: <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded font-mono font-bold text-[11px]">portfolio</code>)। সাইটের সমস্ত ফিচার সচল করতে নিচের পদক্ষেপগুলো অনুসরণ করুন:
+                    </p>
+                    <div className="bg-white/80 dark:bg-slate-950/40 p-4 rounded-xl border border-amber-200/50 dark:border-amber-900/20 space-y-2 text-xs font-medium text-slate-700 dark:text-slate-350">
+                      <p><strong className="text-amber-700 dark:text-amber-400">১. SQL Editor এ যান:</strong> আপনার <a href="https://supabase.com" target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 underline font-bold inline-flex items-center space-x-0.5"><span>Supabase Dashboard</span><ExternalLink className="w-3 h-3 inline" /></a> এ লগইন করে আপনার প্রোজেক্টের বাম পাশের মেনু থেকে <strong className="font-bold text-slate-900 dark:text-white">SQL Editor</strong> এ ক্লিক করুন।</p>
+                      <p><strong className="text-amber-700 dark:text-amber-400">২. নিউ কুয়েরি খুলুন:</strong> উপরের <strong className="font-bold text-slate-900 dark:text-white">New query</strong> বাটনে ক্লিক করুন।</p>
+                      <p><strong className="text-amber-700 dark:text-amber-400">৩. কোড পেস্ট করুন:</strong> নিচের বাটনে ক্লিক করে পুরো SQL কোডটি কপি করে সেখানে পেস্ট করুন।</p>
+                      <p><strong className="text-amber-700 dark:text-amber-400">৪. রান করুন:</strong> ডেক্সটপের ক্ষেত্রে ডান পাশের নিচের <strong className="font-bold text-slate-900 dark:text-white">Run</strong> বাটনে ক্লিক করুন।</p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 pt-1">
+                      <button
+                        onClick={handleCopySql}
+                        className={`inline-flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+                          copiedSql
+                            ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/10'
+                            : 'bg-slate-900 text-white hover:bg-slate-800 dark:bg-emerald-500 dark:text-slate-950 dark:hover:bg-emerald-400'
+                        }`}
+                      >
+                        {copiedSql ? (
+                          <>
+                            <Check className="w-4 h-4" />
+                            <span>SQL কপি হয়েছে! (Copied)</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-4 h-4" />
+                            <span>SQL স্কিমা কপি করুন (Copy SQL Schema)</span>
+                          </>
+                        )}
+                      </button>
+                      <p className="text-[11px] text-slate-450 font-semibold italic">
+                        *কোডটি রান করার পর এই পেজটি একবার রিফ্রেশ করুন।
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* --- TAB: STUDENT ORDERS / ENROLLMENTS --- */}
             {activeTab === 'enrollments' && (() => {
               // Local filtering logic

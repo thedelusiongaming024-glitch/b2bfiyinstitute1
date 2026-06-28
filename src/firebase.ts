@@ -26,11 +26,46 @@ const firebaseConfig = {
 // Initialize Firebase App
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firestore with the custom databaseId from config
-const db = getFirestore(app, "ai-studio-75006d77-c024-4702-bd24-ea1d3fdfe717");
+const customDb = getFirestore(app, "ai-studio-75006d77-c024-4702-bd24-ea1d3fdfe717");
+const defaultDb = getFirestore(app);
+
+// Use customDb by default, but allow live reassignment to defaultDb
+export let db = customDb;
+let activeDb = customDb;
+
+export function getDb() {
+  return activeDb;
+}
+
+let checkPromise: Promise<void> | null = null;
+
+export async function ensureDbConnected(): Promise<void> {
+  if (checkPromise) return checkPromise;
+  
+  checkPromise = (async () => {
+    try {
+      // Perform a lightweight check against the settings collection on customDb
+      const testRef = doc(customDb, 'settings', 'settings');
+      await getDoc(testRef);
+      console.log('✅ Firestore custom database connection verified!');
+      activeDb = customDb;
+      db = customDb;
+    } catch (err) {
+      console.warn('⚠️ Firestore custom database not available. Falling back to default database.', err);
+      activeDb = defaultDb;
+      db = defaultDb;
+    }
+  })();
+  
+  return checkPromise;
+}
+
+// Start checking early on load
+if (typeof window !== 'undefined') {
+  ensureDbConnected().catch(() => {});
+}
 
 export { 
-  db,
   collection,
   doc,
   getDocs,
@@ -43,3 +78,4 @@ export {
   where,
   orderBy
 };
+
